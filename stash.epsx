@@ -1,0 +1,25 @@
+%!PS-Adobe-2.0 EPSF-1.2
+%%BoundingBox: -50 300 250 530
+%%Creator: Gisle Aas (Copyright 1998)
+
+%require "common.ps"
+%require "stash.ps"
+%require "ptr.ps"
+%require "box.ps"
+%require "glob.ps"
+
+-38 515 15 525 rect gsave palered fill grestore stroke
+/Courier 8 SF -35 517 M (defstash) show
+10 520 10 500 ptrn
+
+0 500 (main) [(main::) (foo) (foo::)] stash
+0 430 (foo)  [(bar::)] stash
+0 380 (foo::bar) [(baz)] stash
+
+gsave [3 1] 0 setdash
+45 485 60 485 60 510 30 510 30 500 ptrn
+45 465 60 465 60 445 10 445 10 430 ptrn
+45 415 60 415 60 395 10 395 10 380 ptrn
+grestore
+
+75 500 (*main::main) glob
