@@ -70,7 +70,7 @@ hold a string and an integer value.  An <i>SvPVNV</i> value can hold a
 string, an integer and a double value.  The <i>SvPVMG</i> is used when
 magic is attached or the value is blessed.  The <i>SvPVBM</i> adds
 information for fast searching (Boyer-Moore) on the string value.  The
-<i>SvPVLV</i> represents a l-value object (the result of substr).
+<i>SvPVLV</i> represents a L-value object.
 <i>CV</i> is a code value, which represents a perl
 function/subroutine/closure or contains a pointer to an XSUB.
 <i>GV</i> is a glob value and <i>IO</i> contains pointers to open
@@ -299,7 +299,7 @@ Perl.  In the Perl source code this structure is typedefed to
 Routines that can take any type as parameter will have
 <code>SV*</code> as parameter.  Routines that only work with arrays or
 hashes have <code>AV*</code> or <code>HV*</code> respectively in their
-parameter list.
+parameter list.  Likewise for the rest.
 
 <a name="svpv"><h2>SvPV</h2></a>
 
@@ -344,7 +344,8 @@ from the beginning of a string, the OOK flag is used.  When this flag
 is on, then the IVX value is not interpreted as an integer value, but
 is instead used as an <i>offset</i> into the string.  The PVX, CUR,
 LEN is adjusted to point within the allocated string instead.  The
-sv_chop()/sv_backoff() routines adjust the offset.
+sv_chop()/sv_backoff() routines adjust the offsets and set/clear the
+OOK flag.
 
 <p><center><img src="ook.gif"></center>
 
@@ -373,7 +374,7 @@ value.
 
 <p>Subclasses of SvPV can also be treated as SvRV objects when the ROK
 flag is turned on for them.  The PVX will then be used as the RV field
-of the SvRV.
+of the SvRV.  Of course ROK and POK is mutually exclusive.
 
 <p><center><img src="svpvrv.gif"></center>
 
@@ -387,11 +388,12 @@ be set.
 
 <p>STASH (<b>s</b>ymbol <b>t</b>able h<b>ash</b>) is a pointer to a HV
 that represents some namespace/class, which means that the NAME field
-of the HV must be non-NULL (see description of HV below).  The STASH
-field is set when the value is blessed into a package (becomes an
-object).  The OBJECT flag will be set when STASH is.  <small><i>(IMHO, this
-field should really have been named "CLASS".  The GV and CV subclasses
-introduce their own fields called STASH.)</i></small>
+of the HV must be non-NULL (see description of HV ans stashes below).
+The STASH field is set when the value is blessed into a package
+(becomes an object).  The OBJECT flag will be set when STASH is.
+<small><i>(IMHO, this field should really have been named "CLASS".
+The GV and CV subclasses introduce their own unrelated fields called
+STASH which might be confusing.)</i></small>
 
 <p><center><img src="svpvmg.gif"></center>
 
@@ -541,10 +543,11 @@ SV (which is returned when <code>$#array</code> is requested). FLAGS
 contains some extra flag bits that are specific of the array subtype.
 
 <p>The first three fields of xpvav have been renamed even though they
-serve nearly the same function.  PVX has become ARRAY.  CUR has become
-FILL and LEN has become MAX.  One difference is that the value of
-FILL/MAX is always one less than CUR/LEN would be in the same
-situation.  The IVX/NVX fields are unused.
+serve nearly the same function as the corresponding SvPV fields.  PVX
+has become ARRAY, CUR has become FILL and LEN has become MAX.  One
+difference is that the value of FILL/MAX is always one less than
+CUR/LEN would be in the same situation.  The IVX/NVX fields are
+unused.
 
 <p><center><img src="av.gif"></center>
 
@@ -628,16 +631,16 @@ SvNULL flags:
 
   <dt> 21) <b>SHAREKEYS</b>
 
-  <dd> When this flag is set, then all HEK structures containing the
-       same strings will be shared between hashes.  This should reduce
-       the storage occupied by hash keys.
+  <dd> When this flag is set, then the hash will share the HEK structures
+       with a special hash pointed to by the <code>strtab</code> variable.
+       This reduce the storage occupied by hash keys, especially when we
+       have lots of hashes with the same keys.
        The SHAREKEYS flag is on by default for newly created HVs.
        <p>
        <center><img src="strtab.gif"></center>
 
        <p>
-       The shared HEKs are stored in a special HV called
-       <code>strtab</code>.  What is special here is that the <i>val</i>
+       What is special with the <code>strtab</code> hash is that the <i>val</i>
        field of the HE structs is used as a reference counter for the
        HEK.  The counter is incremented when new hashes link up this HEK
        and decremented when the key is removed from the hashes.
