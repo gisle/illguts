@@ -7,6 +7,8 @@ all: \
    svpviv.gif \
    svpvnv.gif \
    svpvmg.gif \
+   svpvbm.gif \
+   svpvlv.gif \
    av.gif     \
    hv.gif     \
    strtab.gif \
