@@ -9,6 +9,7 @@ all: \
    svpvmg.gif \
    svpvbm.gif \
    svpvlv.gif \
+   svpvrv.gif \
    av.gif     \
    hv.gif     \
    strtab.gif \
