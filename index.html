@@ -238,7 +238,14 @@ just to find that the information is not there.
 
   <dt> 16) <b>IOKp</b> (Integer OK Private)
 
-  <dd>has valid non-public integer value
+  <dd>has valid non-public integer value.
+
+      <p>The private OK flags (IOKp, NOKp, POKp) 
+      are used by the magic system.  During
+      execution of a magic callback, the private flags will be used to set
+      the public flags.  When the callback returns, then the
+      public flags are cleared.  This effectively is used to pass the
+      value to get/set to/from magic callbacks.
        <p>
 
   <dt> 17) <b>NOKp</b> (Numeric OK Private)
@@ -650,7 +657,45 @@ SvNULL flags:
 
 <h2>GV</h2>
 
+<The <i>GV</i> ("glob value" aka "symbol") is like <i>SvPVMG</i> above,
+but has five additional fields; GP, NAME, NAMELEN, GvSTASH, FLAGS.
+
+<p>The GP is a pointer to structure that holds pointers to data of
+various types.  Perl use a pointer (instead of including the GP fields
+in the xpvgv) in order to implement glob aliasing.
+
+<p>The NAME/NAMELEN denotes the unqualified name of this symbol and
+GvSTASH points to the symbol table where this symbol lives.  The fully
+qualified symbol name is obtained by taking the NAME of the GvSTASH
+(see HV above) and appending "::" and NAME to it.  The hash pointed to
+by GvSTASH will also contain an element with NAME as key and this
+symbol as value.
+
 <p><center><img src="gv.gif"></center>
+
+<p>The FLAGS field contains space for 8 additional flag bits:
+
+<blockquote><dl>
+
+ <dt>0) <b>INTRO</b>
+
+ <dt>1) <b>MULTI</b>
+ <dd> Have we seen more than one occurence of this glob.  Used to
+      implement the "possibly typo" warning.
+
+ <dt>2) <b>ASSUMECV</b>
+
+ <dt>4) <b>IMPORTED_SV</b>
+ <dt>5) <b>IMPORTED_AV</b>
+ <dt>6) <b>IMPORTED_HV</b>
+ <dt>7) <b>IMPORTED_CV</b>
+</dl></blockquote>
+
+<p>The data type fields for the GP are: SV, IO, FORM, AV, HV, CV.
+These are also acessible from Perl.
+
+The
+additional fields are: REFCNT, EGV, CVGEN, LASTEXPR, LINE, FILEGV.
 
 <h2>CV</h2>
 
