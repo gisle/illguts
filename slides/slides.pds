@@ -4,7 +4,7 @@
 
 <hr><xmp>
 int  SvTYPE(SV* sv);
-void sv_upgrade(SV* sv, int type);
+void SvUPGRADE(SV* sv, int type);
 </xmp>
 
 =slide SvNULL
@@ -38,9 +38,10 @@ int SvRMAGICAL(SV*);
 SV*   newSVpv(char*, int);
 SV*   newSVpvn(char*, int);
 SV*   newSVpvf(const char*, ...);
+
 char* SvPV(SV*, STRLEN len); /* macro */
 char* SvPV_force(SV*, STRLEN len);
-char* SVPVX(SV*);
+char* SvPVX(SV*);
 
 int SvCUR(SV*);
 SvCUR_set(SV*, I32 val);
