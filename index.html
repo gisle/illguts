@@ -8,12 +8,12 @@ topmargin=0>
 
 <h1 align=center>PerlGuts Illustrated<br><small>Version 0.02</small></h1>
 
-<p>This document is meant to supplement the perlguts(1) manual page
-that comes with Perl.  It includes commented illustrations of all
-(eventually) major internal Perl data structures.  Having this
+<p>This document is meant to supplement the <i>perlguts(1)</i> manual
+page that comes with Perl.  It includes commented illustrations of all
+(eventually?) major internal Perl data structures.  Having this
 document handy hopefully makes reading the Perl source code easier.
-It might also help you interpreting the <i>Devel::Peek</i> variable dumps.
-I'll try to expand it as I learn more.
+It might also help you interpret the <i>Devel::Peek</i> variable
+dumps.  I'll try to expand it as I learn more.
 
 <p>The first things to look at are the data structures that represent
 Perl data; scalars of various kinds, arrays and hashes.  Internally
@@ -91,7 +91,8 @@ In the description below we use field names that match the macros that
 are used to access the corresponding field.  For instance the
 <code>xpv_cur</code> field of the <code>xpvXX</code> structs are
 accessed with the <code>SvCUR()</code> macro.  The field is referred
-to as <b>CUR</b> in the description below.
+to as <b>CUR</b> in the description below.  This also match the field
+names reported by the <i>Devel::Peek</i> module.
 
 </i></small></blockquote>
 
@@ -205,9 +206,8 @@ just to find that the information is not there.
 
   <dt> 11) <b>ROK</b> (Reference OK)
 
-  <dd>  This flag indicates that the type is SvRV and that the RV field
-        contains a valid reference pointer.  A SvRV object with ROK flag
-        off represents an undefined value.
+  <dd>  This flag indicates that the type should be treated as an SvRV
+        and that the RV field contains a valid reference pointer.
        <p>
 
   <dt> 12) <b>FAKE</b>
@@ -355,9 +355,14 @@ points.
 
 <p>The <i>SvRV</i> subtype just lets the SV field ANY point to a
 pointer which points to an SV (which can be any of the SvNULL
-subtypes).
+subtypes).  A SvRV object with ROK flag off represents an undefined
+value.
 
 <p><center><img src="svrv.gif"></center>
+
+<p>Subclasses of SvPV can also be treated as SvRV objects when the ROK
+flag is turned on for them.  The PVX will then be used as the RV field
+of the SvRV.
 
 <h2>SvPVMG</h2>
 
@@ -532,13 +537,13 @@ allow strings with embedded NULs.
 the same way.  MAX is the number of elements in ARRAY minus one. (The
 size of the ARRAY is required to be a power of 2, since the code that
 deals with hashes just mask off the last few bits of the HASH value to
-locate the correct HE column for a key: ARRAY[HASH & MAX]).  Also
-note that ARRAY can be NULL (but MAX will never be below 7).
-
+locate the correct HE column for a key: ARRAY[HASH & MAX]).  Also note
+that ARRAY can be NULL when the hash is empty (but the MAX value will
+still be at least 7, which is the minimum value assigned by Perl.)
 
 The FILL is the number of elements in ARRAY which is not NULL.  The
-IVX field has been renamed KEYS and is the number of hash elements
-in the HASH.  The NVX field is unused.
+IVX field has been renamed KEYS and is the number of hash elements in
+the HASH.  The NVX field is unused.
 
 <p>The HEs are simple structs containing 3 pointers.  A pointer to the
 next HE and a pointer to the key and the value of the given hash
@@ -614,8 +619,8 @@ SvNULL flags:
 <small>
 
 <i>&copy; 1998 Gisle Aas</i><br>
-<a href="mailto:aas@sn.no">&lt;aas@sn.no&gt;</a>
-
+<a href="mailto:aas@sn.no">&lt;aas@sn.no&gt;</a><br>
+$Date$
 </small>
 </div>
 
