@@ -378,15 +378,54 @@ structures that contains callback functions and other data.  If the
 MAGIC pointer is non-NULL, then one or more of the MAGICAL flags will
 be set.
 
-
-<p>STASH (<b>s</b>ymbol <b>t</b>able h<b>ash</b>) his a pointer to a
-HV that represents some namespace/class.  This field is set when the
-value is blessed into a package (becomes an object).  The OBJECT flag
-will be set when STASH is.
+<p>STASH (<b>s</b>ymbol <b>t</b>able h<b>ash</b>) is a pointer to a
+HV that represents some namespace/class, which means that the NAME
+field of the HV must be non-NULL (see description of HV below).  The
+STASH field is set when the value is blessed into a package (becomes
+an object).  The OBJECT flag will be set when STASH is.
 
 <p><center><img src="svpvmg.gif"></center>
 
-<p>The <i>MAGIC</i> structure in detail....
+<p>The field MAGIC points to an instance of <code>struct magic</code>
+(typedefed as <code>MAGIC</code>).  This struct has 8 fields:
+<ol>
+
+<li>
+<i>moremagic</i> is a pointer to another MAGIC and is used to form a
+single linked list of the MAGICs attached to an SV.
+
+<li><i>virtual</i> is a pointer to a struct containing 5 function
+pointers.  The functions (if set) are invoked when the corresponding
+action happens to the SV.
+
+<li><i>private</i> is a 16 bit number (U16) not used by Perl.
+
+<li><i>type</i> is a character field and is used to denote which kind
+of magic this is.  The interpretation of the rest of the fields depend on
+the <i>type</i>.  There is usually a direct correspondence between the
+<i>type</i> field and the <i>virtual</i> field.
+
+<li><i>flags</i> contains 8 flag bits.  Only 2 are generally used.
+Bit 1 is the <b>REFCOUNTED</b> flag.  It indicates that the <i>obj</i>
+is assumed to be an SV and that it's reference count must be
+decremented when this magic is freed.  The <b>GSKIP</b> flag indicate
+that invocation of the magical GET method should be suppressed.  Other
+flag bits are used depending of the kind of magic.
+
+<li><i>obj</i> is usually a pointer to some SV.  How it is used
+depends on the kind of magic this is.
+
+<li><i>ptr</i> is usually a pointer to some character string.  How it
+is used depends on the kind of magic this is.  If the <i>len</i> field
+is >= 0, then <i>ptr</i> is assumed to point to a malloced buffer and
+will be automatically freed when the magic is.
+
+<li><i>len</i> is usually the length of the character string pointed
+to by <i>ptr</i>.  How it is used depends on the kind of magic this
+is.
+
+</ol>
+
 
 <h2>SvPVBM</h2>
 
