@@ -45,6 +45,10 @@
      /x2 x 5 w mul add def
      /y2 y 15 sub def
 
+     gsave
+     /Courier findfont 8 scalefont setfont
+     x2 y 2 add M (mgvtbl) rshow
+
      1 setlinewidth
      x y x2 y2 rect stroke
      0.5 setlinewidth
@@ -60,7 +64,7 @@
      /x2 x2 w 2 div sub def
      /y2 y2 10 sub def
 
-     /Courier findfont 8 scalefont setfont
+     /Courier-Bold findfont 8 scalefont setfont
      funcs {
         dup length 0 eq { %ifelse
            % no func
@@ -75,5 +79,6 @@
         /x2 x2 w sub def
      } forall
 
+     grestore
    end
 } def
