@@ -9,6 +9,7 @@ all: \
    svpvmg.gif \
    av.gif     \
    hv.gif     \
+   strtab.gif \
    ook.gif    \
    flags.gif  \
    types.gif
