@@ -1,0 +1,203 @@
+
+<title>PerlGuts Illustrated</title>
+
+<BODY bgcolor="#FFFFFF"
+text="#000000" link="#000055" vlink="#550000" alink="#000000"
+topmargin=0>
+
+
+<h1 align=center>PerlGuts Illustrated</h1>
+
+This document is meant to supplement the perlguts(1) manual page that
+comes with Perl.  It includes commented illustrations of all major
+internal Perl data structures.  I'll try to expand it as I learn more.
+
+<p>The first thing to look at are the data structures that represents
+Perl data; scalars of various kinds, arrays and hashes.  Internally
+Perl calls a scalar <i>SV</i> (scalar value), an array <i>AV</i>
+(array value) and a hash <i>HV</i> (hash value).  In addition it uses
+<i>IV</i> for integer value, <i>NV</i> for numeric value (double),
+<i>PV</i> for a pointer (string, but 'S' was taken) value (char*), and
+<i>RV</i> for reference value.
+
+<p>The internal structure of the Perl data types is really object
+oriented.  Perl relies on using C's structural equivalence to help
+emulate C++ inheritance of types.  The various data types that Perl
+implement are illustrated in this class hierarchy diagram.  The arrows
+indicate inheritance.
+
+<p><center><img src="types.gif"></center>
+
+<p>As you can see Perl use multiple inheritance with C <i>SvNULL</i>
+acting as some kind of virtual base class.  All the Perl types are
+identified by numberes, and a lot of the internal Perl code test the
+isa-relationship between types with the <= operator.  As you can see
+from the figure above, this can only work reliably for some
+comparisons.  All Perl data values are tagged with their type, so you
+can always ask an object what it's type is and act according to this
+information.
+
+
+<p>An SvPVIV value can hold a string and an integer value.  An SvPVNV
+value can hold a string, an integer and a double value.  The SvPVMG is
+used when magic is attacted or the value is blessed.  The SvPVBM adds
+information for fast searching (Boyer-Moore) on the string value.  The
+SvPVLV is a left-side value (the result of substr).  AV, HV has been
+mentioned.  CV is a code value, which represents a perl
+function/subroutine or cointains a pointer to an XSUB.  GV is a glob
+value and IO is contains pointers to open files and directories and
+other state information about files.  The SvPVFM is used to hold
+information on forms.
+
+<p>Perl data objects can change type as the value change.  The SVs is
+said to be upgraded.  Type changes only go down the hierarchy.  (See
+the sv_upgrade() function.)
+
+<p>The actual layout in memory does not really match how a typical C++
+compiler would implement a hierarcy as the one above.  Let's see how
+it is done.
+
+<h2>SvNULL and struct sv</h2>
+
+<p>The simplest type is SvNULL (the type constant is SVt_NULL in the
+Perl source code, but I have abrivated the type names somewhat).  It
+always represents an <i>undefined</i> scalar value.  It only consist
+of the "struct sv" which looks like this:
+
+<p><center><img src="svnull.gif"></center>
+
+<p>It contains a pointer (ANY) to more data, which in this case is
+always NULL.  All the subtypes are implemented by attatching
+additional data to the ANY pointer.
+
+The second field is an integer reference counter (REFCNT) which should
+tell us how many pointers reference this object.  When type objects
+are created this value is initialized to 1.  The field must be
+incremented when a new pointer is pointing at it and decremented when
+the pointer is destroyed or assigned a different value.  When the
+reference count reach zero the object is freed.
+
+An finally it contains some FLAGS and a TYPE field.  This structure is
+common for all subtypes of SvNULL in Perl.
+
+In the Perl source code this structure is typedefed to <i>SV</i>,
+<i>AV</i>, <i>HV</i> and others.  Routines that can take any type as
+parameter will have <i>SV*</i> as parameter.  Routines that only work
+with arrays or hashes have <i>AV*</i> or <i>HV*</i> in their parameter
+list.
+
+<p>The type field contains a code that represents one of the types
+shown in the figure above.  The symbolic names (and sequence) is:
+
+<blockquote><pre>
+typedef enum {
+	SVt_NULL,	/* 0 */
+	SVt_IV,		/* 1 */
+	SVt_NV,		/* 2 */
+	SVt_RV,		/* 3 */
+	SVt_PV,		/* 4 */
+	SVt_PVIV,	/* 5 */
+	SVt_PVNV,	/* 6 */
+	SVt_PVMG,	/* 7 */
+	SVt_PVBM,	/* 8 */
+	SVt_PVLV,	/* 9 */
+	SVt_PVAV,	/* 10 */
+	SVt_PVHV,	/* 11 */
+	SVt_PVCV,	/* 12 */
+	SVt_PVGV,	/* 13 */
+	SVt_PVFM,	/* 14 */
+	SVt_PVIO	/* 15 */
+} svtype;
+</pre></blockquote>
+
+<p>The flags ...............
+
+<h2>SvPV</h2>
+
+<p>A scalar that can hold a string value is called an <i>SvPV</i>.  In
+addition to the <i>SV</i> stuct of SvNULL, an <i>xpv</i> struct is
+allocated and it contains 3 fields.  PVX is the pointer to an
+allocated char array.  CUR is an integer giving the current length of
+the string.  LEN is an integer giving the length of the allocated
+string.  The char/byte at (PVX + CUR) should always be '\0' in order
+to make sure that the string is NUL-terminated if passed to C library
+routines.  This requires that LEN is always at lest 1 larger than CUR.
+
+<p><center><img src="svpv.gif"></center>
+
+<p>The POK flag indicates if the string pointed to by PVX contains an
+valid value.  A SvPV with the POK flag turned off represents
+<i>undef</i>.  The PVX pointer can also become NULL when POK is off.
+
+<h2>SvPVIV and SvPVNV</h2>
+
+<p>The <i>SvPVIV</i> type is like <i>SvPV</i> but has an additional
+field to hold a single integer value called IVX.  The IOK flag
+indicates if the IVX value is valid.  If both the IOK and POK flag is
+on, then the PVS will (usually) be a string representation of the same
+number found in IVX.
+
+<p><center><img src="svpviv.gif"></center>
+
+<p>The <i>SvPVNV</i> type is like <i>SvPVIV</i> but has an additional
+field to hold a single <i>double</i> value called NVX.  The
+corresponding flag is called NOK.
+
+<p><center><img src="svpvnv.gif"></center>
+
+<h2>SvOOK</h2>
+
+As a special hack in order to improve the speed of removing characters
+from the beginning of a string, the OOK flag is used.  When this flag
+is on, then the IVX value is not intepreted as an integer, but is
+instead used as an offset into the string.  The PVX, CUR, LEN is
+adjusted to point within the allocated string instead.  The sv_chop()
+routine does this.
+
+<p><center><img src="ook.gif"></center>
+
+<h2>SvIV and SvNV</h2>
+
+<p>As a special case we also have <i>SvIV</i> and <i>SvNV</i> types
+that only have room for a single integer or a single double value.
+These are special in that the PVX/CUR/LEN fields are not present even
+if the ANY pointer points to them.  This makes it possible to for code
+to always access the IVX/NVX fields at a fixed offset from where SV
+field ANY points.
+
+<p><center><img src="sviv.gif"></center>
+
+<p><center><img src="svnv.gif"></center>
+
+<h2>SvRV</h2>
+
+<p>The <i>SvRV</i> subtype just lets the SV field ANY point to a
+pointer which points to an SV (which can be any of the subtypes
+above and below).
+
+<p><center><img src="svrv.gif"></center>
+
+<h2>SvMG</h2>
+
+<p>The <i>SvPVMG</i> is like <i>SvPVNV</i> above, but has two
+additional fields; MAGIC and STASH.  MAGIC is a pointer to additional
+stuctures that contains callback functions and other data.  STASH is a
+pointer to the HV that represents some namespace.  This field is set
+when the value is blessed into a package (becomes an object).
+
+<p><center><img src="svpvmg.gif"></center>
+
+<p>The <i>MAGIC</i> structure....
+
+<h2>AV</h2>
+
+<p>Perl arrays are represented like this.
+
+<p><center><img src="av.gif"></center>
+
+<h2>HV</h2>
+
+<p>Perl hashes are represented like this.
+
+<p><center><img src="hv.gif"></center>
+
