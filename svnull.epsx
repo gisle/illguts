@@ -3,30 +3,23 @@
 
 %include "common.ps"
 %include "mws.ps"
+%include "rect.ps"
 
 % shadow
 gsave
 3 -3 translate 0.5 setgray
-0 0 M
-0 60 L
-80 60 L
-80 0 L
-closepath fill
+0 0 80 60 rect fill
 grestore
 
 % box
-0 0 M
-0 60 L
-80 60 L
-80 0 L
-closepath 
+0 0 80 60 rect
 gsave 1 setgray fill grestore
 
 % any color box
 gsave
    newpath
    0.8 0.8 1.0 setrgbcolor
-   0 40 M 0 60 L 80 60 L 80 40 L closepath
+   0 40 80 60 rect
    fill
 grestore
 
@@ -35,7 +28,7 @@ grestore
 gsave
    newpath
    1.0 0.8 0.8 setrgbcolor
-   60 0 M 60 20 L 80 20 L 80 0 L closepath
+   60 0 80 20 rect
    fill
 grestore
 
@@ -67,7 +60,7 @@ stroke
 (TYPE) 62 5 16 mws
 
 /Courier findfont 8 scalefont setfont
-80 62 M (SV) dup stringwidth pop neg 0 rmoveto show
+80 62 M (SV) rshow
 
 % ANY pointer
 gsave
