@@ -30,7 +30,7 @@ help emulate something like C++ inheritance of types.  The various
 data types that Perl implement are illustrated in this class hierarchy
 diagram.  The arrows indicate inheritance.
 
-<p><center><img src="types.gif"></center>
+<p><center><img src="svtypes.gif"></center>
 
 <p>As you can see, Perl uses multiple inheritance with C <i>SvNULL</i> (also named just <i>SV</i>)
 acting as some kind of virtual base class.  All the Perl types are
@@ -180,6 +180,12 @@ just to find that the information is not there.
 
   <dd> This flag indicates that the object has any other magical methods
        (besides get/len/set magic method) or even methodless magic attached.
+
+        <p>The RMAGICAL flag is used mainly for tied HV and AV (having 'P'
+	magic) and SVs which have magic <i>clear</i> method. It is used as an
+	optimization to avoid setting GMAGICAL and SMAGICAL flags for SVs
+	which need to be marked as MAGICAL otherwise.
+
        <p>
        Any of GMAGICAL, SMAGICAL and RMAGICAL is called MAGICAL
        <p>
@@ -343,9 +349,7 @@ As a special hack in order to improve the speed of removing characters
 from the beginning of a string, the OOK flag is used.  When this flag
 is on, then the IVX value is not interpreted as an integer value, but
 is instead used as an <i>offset</i> into the string.  The PVX, CUR,
-LEN is adjusted to point within the allocated string instead.  The
-sv_chop()/sv_backoff() routines adjust the offsets and set/clear the
-OOK flag.
+LEN is adjusted to point within the allocated string instead.
 
 <p><center><img src="ook.gif"></center>
 
@@ -806,9 +810,11 @@ OWNER are only present for Perls that support threading).
 
 <p><center><img src="io.gif"></center>
 
-<a name="op"><h2>OP</h2></a>
+<a name="pad"><h2>PAD</h2></a>
 
-COP/UNOP/BINOP/LISTOP/LOGOP/CONDOP/PMOP/SVOP/GVOP/PVOP/LOOP
+<a name="op"><h2><a href="op.html">OP</a></h2></a>
+
+<h2>Stacks</h2>
 
 <h2>REGEXP</h2>
 
