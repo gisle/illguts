@@ -6,20 +6,22 @@ text="#000000" link="#000055" vlink="#550000" alink="#000000"
 topmargin=0>
 
 
-<h1 align=center>PerlGuts Illustrated</h1>
+<h1 align=center>PerlGuts Illustrated<br><small>Version 0.01</small></h1>
 
-<p>This document is meant to supplement the perlguts(1) manual page that
-comes with Perl.  It includes commented illustrations of all
-(eventually) major internal Perl data structures.  I'll try to expand
-it as I learn more.
+<p>This document is meant to supplement the perlguts(1) manual page
+that comes with Perl.  It includes commented illustrations of all
+(eventually) major internal Perl data structures.  Having this
+document handy hopefully makes reading the Perl source code easier.
+I'll try to expand it as I learn more.
 
 <p>The first thing to look at are the data structures that represents
 Perl data; scalars of various kinds, arrays and hashes.  Internally
 Perl calls a scalar <i>SV</i> (scalar value), an array <i>AV</i>
 (array value) and a hash <i>HV</i> (hash value).  In addition it uses
-<i>IV</i> for integer value, <i>NV</i> for numeric value (double),
+<i>IV</i> for integer value, <i>NV</i> for numeric value (aka double),
 <i>PV</i> for a pointer value (aka string value (char*), but 'S' was
-already taken), and <i>RV</i> for reference value.
+already taken), and <i>RV</i> for reference value.  The <i>IVs</i> are
+further guaranteed to be big enough to hold a <code>void*</code>.
 
 <p>The internal relationship between the Perl data types is really
 object oriented.  Perl relies on using C's structural equivalence to
@@ -32,7 +34,7 @@ diagram.  The arrows indicate inheritance.
 <p>As you can see Perl use multiple inheritance with C <i>SvNULL</i>
 acting as some kind of virtual base class.  All the Perl types are
 identified by small numbers, and the internal Perl code often get away
-with testing the isa-relationship between types with the <= operator.
+with testing the ISA-relationship between types with the <= operator.
 As you can see from the figure above, this can only work reliably for
 some comparisons.  All Perl data value objects are tagged with their
 type, so you can always ask an object what it's type is and act
@@ -61,17 +63,18 @@ according to this information.
 
 
 
-<p>In addition to the type names already mentioned, the following
-names are found in the figure: An SvPVIV value can hold a string and
-an integer value.  An SvPVNV value can hold a string, an integer and a
-double value.  The SvPVMG is used when magic is attached or the value
-is blessed.  The SvPVBM adds information for fast searching
-(Boyer-Moore) on the string value.  The SvPVLV represents a l-value object (the
-result of substr).  CV is a code value, which represents a perl
-function/subroutine/closure or contains a pointer to an XSUB.  GV is
-a glob value and IO contains pointers to open files and directories
-and other state information about files.  The SvPVFM is used to hold
-information on forms.
+<p>In addition to the simple type names already mentioned, the
+following names are found in the figure: An <i>SvPVIV</i> value can
+hold a string and an integer value.  An <i>SvPVNV</i> value can hold a
+string, an integer and a double value.  The <i>SvPVMG</i> is used when
+magic is attached or the value is blessed.  The <i>SvPVBM</i> adds
+information for fast searching (Boyer-Moore) on the string value.  The
+<i>SvPVLV</i> represents a l-value object (the result of substr).
+<i>CV</i> is a code value, which represents a perl
+function/subroutine/closure or contains a pointer to an XSUB.
+<i>GV</i> is a glob value and <i>IO</i> contains pointers to open
+files and directories and other state information about files.  The
+<i>SvPVFM</i> is used to hold information on forms.
 
 <p>Perl data objects can change type as the value change.  The SVs is
 said to be upgraded in this case.  Type changes only go down the
@@ -81,12 +84,21 @@ hierarchy.  (See the sv_upgrade() function in sv.c.)
 compiler would implement a hierarchy like the one depicted above.
 Let's see how it is done.
 
+<blockquote><small><i>
+
+In the description below we use field names that match the macros that
+are used to access the corresponding field.  For instance the
+<code>xpv_cur</code> field of the <code>xpvXX</code> structs are
+accessed with the <code>SvCUR()</code> macro.  The field is referred
+to as <b>CUR</b> in the description below.
+
+</i></small></blockquote>
+
 <h2>SvNULL and struct sv</h2>
 
-<p>The simplest type is SvNULL (the type constant is SVt_NULL in the
-Perl source code, but I have abbreviated the type names somewhat).  It
-always represents an <i>undefined</i> scalar value.  It only consist
-of the "struct sv" which looks like this:
+<p>The simplest type is SvNULL.  It always represents an
+<i>undefined</i> scalar value.  It consist of the "struct sv" only,
+and looks like this:
 
 <p><center><img src="svnull.gif"></center>
 
@@ -101,14 +113,7 @@ incremented when a new pointer is made to point to it and decremented
 when the pointer is destroyed or assigned a different value.  When the
 reference count reach zero the object is freed.
 
-<p>An finally it contains some FLAGS and a TYPE field.  This structure is
-common for all subtypes of SvNULL in Perl.
-
-<p>In the Perl source code this structure is typedefed to <i>SV</i>,
-<i>AV</i>, <i>HV</i> and others.  Routines that can take any type as
-parameter will have <i>SV*</i> as parameter.  Routines that only work
-with arrays or hashes have <i>AV*</i> or <i>HV*</i> respectively in
-their parameter list.
+<p>The third field contains some FLAGS and a TYPE sub-field.
 
 <p>The type field contains a code that represents one of the types
 shown in the type hierarchy figure above. 
@@ -119,7 +124,9 @@ other state of the objects.  Some flags are just used as optimizations
 in order to avoid having to dereference several levels of pointers
 just to find that the information is not there.
 
-<p>The flag bits are:
+<p><center><img src="flags.gif" alt=""></center>
+
+<p>The purpose of the flag bits are:
 
 <blockquote>
 <dl>
@@ -173,6 +180,7 @@ just to find that the information is not there.
        (besides get/len/set magic method) or even methodless magic attacted.
        <p>
        Any of GMAGICAL, SMAGICAL and RMAGICAL is called MAGICAL
+       <p>
 
   <dt> 8) <b>IOK</b> (Integer OK)
 
@@ -264,6 +272,13 @@ just to find that the information is not there.
  
 </dl>
 </blockquote>
+
+<p>The <code>struct sv</code> is common for all subtypes of SvNULL in
+Perl.  In the Perl source code this structure is typedefed to
+<i>SV</i>, <i>AV</i>, <i>HV</i> and others.  Routines that can take
+any type as parameter will have <code>SV*</code> as parameter.
+Routines that only work with arrays or hashes have <code>AV*</code> or
+<code>HV*</code> respectively in their parameter list.
 
 <h2>SvPV</h2>
 
@@ -365,9 +380,9 @@ IVX/NVX fields are unused.
 <p><center><img src="av.gif"></center>
 
 <p>The array pointed to by ARRAY contains pointers to any of the
-subtypes above/below.  Usually ALLOC and ARRAY both points to the
-start of the allocated array.  The use of two pointers is similar to
-the OOK hack described above.  The shift operation can be implemented
+SvNULL subtypes.  Usually ALLOC and ARRAY both points to the start of
+the allocated array.  The use of two pointers is similar to the OOK
+hack described above.  The shift operation can be implemented
 efficiently by just adjusting the ARRAY pointer (and FILL/MAX).
 Similar the pop just involves decrementing the FILL count.
 
@@ -407,11 +422,11 @@ which denotes the name of the name space (or <i>package</i>).  This is
 one of the few places where Perl does not allow strings with embedded
 </ul>
 
-<p>As for AVs the first few fields of the SvPVMG has been renamed in
-the same way.  MAX is the number of elements in ARRAY minus one, and
-the size of the ARRAY is required to be a power of 2 (since the code
-just ARRAY[HASH & MAX] to locate the correct HE column for an key).
-Also note that ARRAY can be NULL (but MAX will never be below 7).
+<p>As for AVs the first few fields of the xpvhv has been renamed in
+the same way.  MAX is the number of elements in ARRAY minus one. (The
+size of the ARRAY is required to be a power of 2, since the code just
+ARRAY[HASH & MAX] to locate the correct HE column for an key).  Also
+note that ARRAY can be NULL (but MAX will never be below 7).
 
 
 The FILL is the number of elements in ARRAY which is not NULL.  The
@@ -420,8 +435,9 @@ in the HASH.  The NVX field is unused.
 
 <p><center><img src="hv.gif"></center>
 
-<p>In an ideal hash both KEYS and FILL are the same value.  This means
-than all HEs can be located directly in the ARRAY.
+<p>In a perfect hash both KEYS and FILL are the same value.  This
+means than all HEs can be located directly in the ARRAY (and all the
+he->next pointers are NULL).
 
 <p>The following two hash specific flags are found among the common
 SvNULL flags:
