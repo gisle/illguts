@@ -814,7 +814,44 @@ OWNER are only present for Perls that support threading).
 
 <a name="op"><h2><a href="op.html">OP</a></h2></a>
 
+I will make a separate document that describes <a
+href="op.html">syntax trees and OP codes</a>.
+
 <h2>Stacks</h2>
+
+During compilation and runtime Perl use several stacks to manage
+itself and the program running.  The first three implements scopes and
+variables and values which are restored (or actions to be performed)
+when the scope is left.
+
+<p>The <code>scopestack</code> pushes the <code>savestack_ix</code>
+when <code>ENTER</code> is executed.  On <code>LEAVE</code> the top
+<code>savestack_ix</code> entry is popped and all things saved on the
+<code>savestack</code> since this is restored.
+
+<p>The <code>savestack</code> contains records of things saved
+in order to be restored when the scopes are left.  Each record consist
+of 2-4 ANY elements.  The first one is a type code, which is used to
+decide how long the record is and how to interpret the other elements.
+(In the figure the type codes are marked pinkish color.)
+
+<p>The <code>tmps_stack</code> implement mortal SVs.  When
+<code>SAVETMPS</code> is executed, then the old
+<code>tmps_floor</code> value is saved on the <code>savestack</i> and
+then <code>tmps_floor</code> is set equal to <code>tmps_ix</code>.
+When <code>FREETMPS</code> is executed, then all SVs pointed to by the
+pointers between <code>tmps_floor</code> and <code>tmps_ix</code> will
+have their REFCNT decremented.  How many this will be will then depend
+on how many scopes has been left.  (Note that the
+<code>tmps_floor</code> and <code>tmps_ix</code> values is the index
+of the last SV* pushed.)
+
+<p><center><img src="scope.gif"></center>
+
+<p>The four next stacks manage subroutine calls (and evals and loops).
+
+<p><center><img src="stack.gif"></center>
+
 
 <h2>REGEXP</h2>
 
@@ -841,3 +878,4 @@ $Date$
 </small>
 </div>
 
+</BODY>
