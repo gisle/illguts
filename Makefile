@@ -14,6 +14,7 @@ all: \
    hv.gif     \
    strtab.gif \
    gv.gif     \
+   stash.gif  \
    cv.gif     \
    svpvfm.gif \
    io.gif     \
