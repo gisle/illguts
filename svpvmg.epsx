@@ -2,17 +2,17 @@
 %%BoundingBox: -5 145 265 310
 %%Creator: Gisle Aas (Copyright 1998)
 
-%include "common.ps"
-%include "sv.ps"
-%include "box.ps"
-%include "rect.ps"
-%include "ptr.ps"
-%include "mws.ps"
-%include "magic.ps"
+%require "common.ps"
+%require "sv.ps"
+%require "box.ps"
+%require "rect.ps"
+%require "ptr.ps"
+%require "mws.ps"
+%require "magic.ps"
 
 0 300 sv
 
-/Courier findfont 8 scalefont setfont
+/Courier 8 SF
 40  302 M (sv) rshow
 105 302 M (xpvmg) rshow
 160 182 M (hv) rshow
@@ -22,7 +22,7 @@
 55 300 6 7 newbox
 55 300 7 box
 
-/Helvetica findfont 11 scalefont setfont
+/Helvetica 11 SF
 60 303 15 sub M
 
 [(PVX) (CUR) (LEN) (IVX) (NVX) (MAGIC) (STASH)] {
