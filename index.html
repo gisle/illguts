@@ -879,7 +879,7 @@ as more general callbacks (destructors).
 mortal is made, then <code>tmps_ix</code> is incremented and the
 corresponding entry in <code>tmps_stack</code> made to point to it.
 When <code>SAVETMPS</code> is executed, then the old
-<code>tmps_floor</code> value is saved on the <code>savestack</i> and
+<code>tmps_floor</code> value is saved on the <code>savestack</code> and
 then <code>tmps_floor</code> is set equal to <code>tmps_ix</code>.
 When <code>FREETMPS</code> is executed, then all SVs pointed to by the
 pointers between <code>tmps_floor</code> and <code>tmps_ix</code> will
