@@ -17,6 +17,9 @@
 105 302 M (xpvbm) rshow
 170 227 M (magic) rshow
 
+/Courier-Bold findfont 6 scalefont setfont
+15 264 M (POK,VALID) cshow
+
 55 300 8 10 newbox
 55 300 10 box
 
