@@ -567,14 +567,27 @@ hack described above.  The shift operation can be implemented
 efficiently by just adjusting the ARRAY pointer (and FILL/MAX).
 Similarly, the pop just involves decrementing the FILL count.
 
-<p>The are only 3 array flags used: <i>(I'll try to describe them when I
-understand the issue)</i>
+<p>The are only 3 array flags defined:
 
 <blockquote><dl>
 
   <dt> 0) <b>REAL</b>
+
+  <dd> It basically means that all
+       SVs contained in this array is owned and must have their
+       reference counters decremented when the reference is removed
+       from the array.  All normal arrays are REAL.  For the
+       <code>stack</code> the REAL flag is turned off.
+       For <code>@_</code> the REAL flag is initially turned off.
+
   <dt> 1) <b>REIFY</b>
+
+  <dd> The array is <i>not</i> REAL but should be made REAL if modified.
+       The <code>@_</code> array will have the REIFY flag turned on.
+
   <dt> 2) <b>REUSED</b>
+
+  <dd> This flag does not seem to be used for anything currently.
 
 </dl></blockquote>
 
