@@ -21,6 +21,7 @@ gsave
    0.8 setgray
    55 225 105 240 rect fill
 grestore
+55 300 8 11 newbox
 55 300 11 box
 
 /Helvetica findfont 11 scalefont setfont
