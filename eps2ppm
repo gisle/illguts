@@ -12,7 +12,8 @@ while (<FILE>) {
     if (my($llx, $lly, $urx, $ury) =
           /^%%BoundingBox:\s*(-?[0-9\.]+)\s+(-?[0-9\.]+)\s+(-?[0-9\.]+)\s+(-?[0-9\.]+)/)
     {
-	 warn "BB: $llx $lly $urx $ury\n";
+
+	 warn "$file: BBox: $llx $lly $urx $ury\n";
 
          my($w,$h) = map {$_ *= $scale} ($urx - $llx, $ury - $lly);
          
