@@ -20,7 +20,8 @@ all: \
    io.gif     \
    ook.gif    \
    flags.gif  \
-   types.gif
+   optypes.gif\
+   svtypes.gif
 
 %.eps: %.epsx Makefile epsx2eps sv.ps common.ps mws.ps box.ps str.ps ptr.ps magic.ps arrow.ps chararray.ps gp.ps stash.ps glob.ps
 	./epsx2eps $< >$@
