@@ -35,7 +35,7 @@
          x 25   add   y 70  sub
          ptrn
      } {
-         newpath x 42.5 add y 7.5 sub 2 0 360 arc F
+         x 42.5 add y 7.5 sub ptrn
      } ifelse
      
      % HEK arrow
@@ -60,13 +60,13 @@
      /Helvetica 8 SF
      (hash) x2 2 add y 25 sub 16 mws pop
      x2 30 add y 25 sub M (len) cshow
-     /Courier 6 SF
+     /Courier 7 SF
      x2 40 add cw 2 div add y 24 sub M
      str {
        gsave 1 string dup 3 2 roll 0 exch put cshow grestore
        cw 0 RM
      } forall
-     (\\0) cshow
+     (\\0) currentpoint cw 1 sub mwcs
 
      % anotate boxes
      /Courier 10 SF
@@ -77,7 +77,7 @@
      gsave 1 setgray x 55 add y 39 sub x2 y 36 sub rect F grestore
      1 LW
      x 42.5 add y 37.5 sub x2 ptr1
-     x2 y 33 sub sv
+     x2 y 33 sub sv2
 
    end
 } def
