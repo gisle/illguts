@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0 EPSF-1.2
-%%BoundingBox: -5 125 195 310
+%%BoundingBox: -5 130 250 310
 %%Creator: Gisle Aas (Copyright 1998)
 
 %include "common.ps"
@@ -8,6 +8,7 @@
 %include "rect.ps"
 %include "ptr.ps"
 %include "mws.ps"
+%include "magic.ps"
 
 0 300 sv
 
@@ -29,4 +30,18 @@
 } forall
 
 97.5 157.5 130 ptr1
-130 160 sv
+130 165 sv
+
+
+
+
+
+
+97.5 217.5 130 245 ptrn
+
+gsave
+130 250 translate 0.7 dup scale
+
+0 0 ('x') smagic
+65 -15 [() () () (&magic_setsubstr) ()] mgvtbl
+grestore
