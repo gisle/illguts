@@ -13,6 +13,7 @@ all: \
    av.gif     \
    hv.gif     \
    strtab.gif \
+   io.gif     \
    ook.gif    \
    flags.gif  \
    types.gif

@@ -401,9 +401,11 @@ action happens to the SV.
 <li><i>private</i> is a 16 bit number (U16) not used by Perl.
 
 <li><i>type</i> is a character field and is used to denote which kind
-of magic this is.  The interpretation of the rest of the fields depend on
-the <i>type</i>.  There is usually a direct correspondence between the
-<i>type</i> field and the <i>virtual</i> field.
+of magic this is.  The interpretation of the rest of the fields depend
+on the <i>type</i> (actually it is the callbacks attached to
+<i>virtual</i> that do any interpretation).  There is usually a direct
+correspondence between the <i>type</i> field and the <i>virtual</i>
+field.
 
 <li><i>flags</i> contains 8 flag bits.  Only 2 are generally used.
 Bit 1 is the <b>REFCOUNTED</b> flag.  It indicates that the <i>obj</i>
@@ -648,8 +650,10 @@ SvNULL flags:
 
 <h2>CV</h2>
 <h2>GV</h2>
-<h2>FM</h2>
+<h2>SvPVFM</h2>
 <h2>IO</h2>
+
+<p><center><img src="io.gif"></center>
 
 <h2> More stuff ..... </h2>
 
