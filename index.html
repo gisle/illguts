@@ -31,22 +31,22 @@ diagram.  The arrows indicate inheritance.
 
 <p>As you can see Perl use multiple inheritance with C <i>SvNULL</i>
 acting as some kind of virtual base class.  All the Perl types are
-identified by numberes, and the internal Perl code test the
-isa-relationship between types with the <= operator.  As you can see
-from the figure above, this can only work reliably for some
-comparisons.  All Perl data value objects are tagged with their type,
-so you can always ask an object what it's type is and act according to
-this information.
+identified by small numbers, and the internal Perl code often get away
+with testing the isa-relationship between types with the <= operator.
+As you can see from the figure above, this can only work reliably for
+some comparisons.  All Perl data value objects are tagged with their
+type, so you can always ask an object what it's type is and act
+according to this information.
 
 
-<p>In addition to the type names mentioned above, the following names
-are found in the figure: An SvPVIV value can hold a string and an
-integer value.  An SvPVNV value can hold a string, an integer and a
-double value.  The SvPVMG is used when magic is attacted or the value
+<p>In addition to the type names already mentioned, the following
+names are found in the figure: An SvPVIV value can hold a string and
+an integer value.  An SvPVNV value can hold a string, an integer and a
+double value.  The SvPVMG is used when magic is attached or the value
 is blessed.  The SvPVBM adds information for fast searching
-(Boyer-Moore) on the string value.  The SvPVLV is a l-value (the
-result of substr) object.  CV is a code value, which represents a perl
-function/subroutine/closure or cointains a pointer to an XSUB.  GV is
+(Boyer-Moore) on the string value.  The SvPVLV represents a l-value object (the
+result of substr).  CV is a code value, which represents a perl
+function/subroutine/closure or contains a pointer to an XSUB.  GV is
 a glob value and IO contains pointers to open files and directories
 and other state information about files.  The SvPVFM is used to hold
 information on forms.
@@ -56,20 +56,20 @@ said to be upgraded in this case.  Type changes only go down the
 hierarchy.  (See the sv_upgrade() function in sv.c.)
 
 <p>The actual layout in memory does not really match how a typical C++
-compiler would implement a hierarcy as the one above.  Let's see how
-it is done.
+compiler would implement a hierarchy like the one depicted above.
+Let's see how it is done.
 
 <h2>SvNULL and struct sv</h2>
 
 <p>The simplest type is SvNULL (the type constant is SVt_NULL in the
-Perl source code, but I have abrivated the type names somewhat).  It
+Perl source code, but I have abbreviated the type names somewhat).  It
 always represents an <i>undefined</i> scalar value.  It only consist
 of the "struct sv" which looks like this:
 
 <p><center><img src="svnull.gif"></center>
 
 <p>It contains a pointer (ANY) to more data, which in this case is
-always NULL.  All the subtypes are implemented by attatching
+always NULL.  All the subtypes are implemented by attaching
 additional data to the ANY pointer.
 
 <p>The second field is an integer reference counter (REFCNT) which should
@@ -116,6 +116,8 @@ the fields of the type value objects should be interpreted and various
 other state of the objects.  Some flags are just used as optimizations
 in order to avoid having to dereference several levels of pointers
 just to find that the information is not there.
+
+<p>The flag bits are:
 
 <blockquote>
 <dl>
@@ -269,7 +271,7 @@ allocated char array.  CUR is an integer giving the current length of
 the string.  LEN is an integer giving the length of the allocated
 string.  The char/byte at (PVX + CUR) should always be '\0' in order
 to make sure that the string is NUL-terminated if passed to C library
-routines.  This requires that LEN is always at lest 1 larger than CUR.
+routines.  This requires that LEN is always at least 1 larger than CUR.
 
 <p><center><img src="svpv.gif"></center>
 
@@ -297,7 +299,7 @@ corresponding flag is called NOK.
 
 As a special hack in order to improve the speed of removing characters
 from the beginning of a string, the OOK flag is used.  When this flag
-is on, then the IVX value is not intepreted as an integer value, but is
+is on, then the IVX value is not interpreted as an integer value, but is
 instead used as an offset into the string.  The PVX, CUR, LEN is
 adjusted to point within the allocated string instead.  The
 sv_chop()/sv_backoff() routines adjusts the offset.
@@ -329,7 +331,7 @@ above and below).
 
 <p>The <i>SvPVMG</i> is like <i>SvPVNV</i> above, but has two
 additional fields; MAGIC and STASH.  MAGIC is a pointer to additional
-stuctures that contains callback functions and other data.  STASH is a
+structures that contains callback functions and other data.  STASH is a
 pointer to the HV that represents some namespace.  This field is set
 when the value is blessed into a package (becomes an object).
 
