@@ -6,12 +6,13 @@ text="#000000" link="#000055" vlink="#550000" alink="#000000"
 topmargin=0>
 
 
-<h1 align=center>PerlGuts Illustrated<br><small>Version 0.01</small></h1>
+<h1 align=center>PerlGuts Illustrated<br><small>Version 0.02</small></h1>
 
 <p>This document is meant to supplement the perlguts(1) manual page
 that comes with Perl.  It includes commented illustrations of all
 (eventually) major internal Perl data structures.  Having this
 document handy hopefully makes reading the Perl source code easier.
+It might also help you interpreting the <i>Devel::Peek</i> variable dumps.
 I'll try to expand it as I learn more.
 
 <p>The first thing to look at are the data structures that represents
@@ -262,11 +263,23 @@ just to find that the information is not there.
 
   <dt> 21) <b>SHAREKEYS</b>
 
+  <dd> Only used by HVs. See description of HV below.
+       <p>
+
   <dt> 22) <b>LAZYDEL</b>
+
+  <dd> Only used by HVs. See description of HV below.
+       <p>
 
   <dt> 22) <b>TAIL</b>
 
+  <dd> Only used by SvPVBMs.  See description of SvPVBM below.
+       <p>
+
   <dt> 23) <b>VALID</b>
+
+  <dd> Only used by SvPVBMs.  See description of SvPVBM below.
+       <p>
 
   <dt> 23) <b>COMPILED</b>
  
@@ -341,8 +354,8 @@ points.
 <h2>SvRV</h2>
 
 <p>The <i>SvRV</i> subtype just lets the SV field ANY point to a
-pointer which points to an SV (which can be any of the subtypes
-above and below).
+pointer which points to an SV (which can be any of the SvNULL
+subtypes).
 
 <p><center><img src="svrv.gif"></center>
 
@@ -355,9 +368,10 @@ MAGIC pointer is non-NULL, then one or more of the MAGICAL flags will
 be set.
 
 
-<p>STASH is a pointer to a HV that represents some namespace/class.
-This field is set when the value is blessed into a package (becomes an
-object).  The OBJECT flag will be set when STASH is.
+<p>STASH (<b>s</b>ymbol <b>t</b>able h<b>ash</b>) his a pointer to a
+HV that represents some namespace/class.  This field is set when the
+value is blessed into a package (becomes an object).  The OBJECT flag
+will be set when STASH is.
 
 <p><center><img src="svpvmg.gif"></center>
 
@@ -365,11 +379,93 @@ object).  The OBJECT flag will be set when STASH is.
 
 <h2>SvPVBM</h2>
 
+<p>The <i>SvPVMG</i> is like <i>SvPVMG</i> above, but has three
+additional fields; BmUSEFUL, BmPREVIOUS, BmRARE.  The SvPVBM value
+types are used internally to implement very fast lookup of the string
+in PVX using the Boyer-Moore algorithm.  They are used by the Perl
+index() builtin when the search string is a constant, as well as in
+the RE engine.  The fbm_compile() function turns normal SvPVs into
+this value type.
+
+<p>A table of 256 elements is appended to the PVX.  This table
+contains the distance from the end of string of the last occurence of
+each character in the original string.  In addition fbm_compile()
+locates the rarest character in the string (using builtin letter
+frequency tables) and stores this character in the BmRARE field.  The
+BmPREVIOUS field is set to the location of the first occurence of the
+rare character.  (The purpose of the BmUSEFUL field is not clear to me
+yet.)
+
 <p><center><img src="svpvbm.gif"></center>
+
+<p>The extra SvPVMG information and the character distance table is
+only valid when the <b>VALID</b> flag is on.  A magic structure with
+the sole pupose of turning off the VALID flag on assignment, is always
+attacted to a <i>valid</i> SvPVMG.
+
+<p>The <b>TAIL</b> flag is used to indicate that the search for the SvPVMG
+should be <i>tail anchored</i>, i.e. a match should only be considered
+at the end of the string (or before newline at the end of the string).
+
 
 <h2>SvPVLV</h2>
 
+The <i>SvPVLV</i> is like <i>SvPVMG</i> above, but has four additional
+fields; TARGOFF, TARGLEN, TARG, TYPE.  The typical use is for Perl
+builtins that can be used in the L-value context (substr, vec,...).
+They will return a SvPVLV value, which when assigned to affect the
+<i>target</i> object which we keep a pointer to in the TARG field.
+
+<p>The TYPE is a character variable.  It encodes the kind if L-value
+this is.  Interpretation of the other L-value fields depend on the TYPE.
+The SvPVLVs are (almost) always magical.  The magic type will match
+the TYPE field of the SvPVLV.  The types are:
+
+
+<blockquote><dl compact>
+
+<dt> <b>'x'</b>
+
+<dd> Type-x LVs are returned by the <code>substr($string,
+$offset, $len)</code> builtin.
+
+<dt> <b>'v'</b>
+
+<dd> Type-v LVs are returned by the <code>vec($string,
+$offset, $bits)</code> builtin.
+
+<dt> <b>'.'</b>
+
+<dd> Type-. LVs are returned by the <code>pos($scalar)</code> builtin.
+
+<dt> <b>'k'</b>
+
+<dd> Type-k LVs are returned when <code>keys %hash</code> is
+used on the left side of the assigment operator.
+
+<dt> <b>'y'</b>
+
+<dd> Type-y LVs are used by auto-vivification (of hash and array
+elements) and the foreach array iterator variable.
+
+<dt> <b>'/'</b>
+
+<dd> Used by <i>pp_pushre</i>.  I don't understand this yet.
+
+</dl></blockquote>
+
+<p>The figure below shows a SvPVLV as returned from the
+<code>substr()</code> builtin.  The first substr parameter (the
+string to be affected) is assigned to the TARG field.  The substr
+offset value goes in the TARGOFF field and the substr length parameter
+goes in the TARGLEN field.
+
 <p><center><img src="svpvlv.gif"></center>
+
+<p>When assignment to an SvPVLV type occurs, then the value to be
+assigned is first copied into the SvPVLV itself (and affects the PVX,
+IVX or NVX), the magic SET method is invoked which will update the
+TARG accordingly.
 
 
 <h2>AV</h2>
@@ -497,6 +593,10 @@ SvNULL flags:
 
 </dl></blockquote>
 
+<h2>CV</h2>
+<h2>GV</h2>
+<h2>FM</h2>
+<h2>IO</h2>
 
 <h2> More stuff ..... </h2>
 
