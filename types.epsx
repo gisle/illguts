@@ -40,6 +40,9 @@
 /Helvetica 18 SF
 300 600 (SvNULL) S
 
+% extra arrow from SvRV to SvPV
+gsave 0.5 setgray 226 558 272 558 1.5 7 9 arrow fill grestore
+
 200 550 (SvRV) S   300 600 200 550 A
 300 550 (SvPV) S   300 600 300 550 A
 375 550 (SvIV) S   300 600 375 550 A
