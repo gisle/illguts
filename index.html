@@ -38,6 +38,28 @@ some comparisons.  All Perl data value objects are tagged with their
 type, so you can always ask an object what it's type is and act
 according to this information.
 
+<p>The symbolic type names (and associated value) are:
+
+<blockquote><dl>
+	<dt>0) <b>SVt_NULL</b>
+	<dt>1) <b>SVt_IV</b>
+	<dt>2) <b>SVt_NV</b>
+	<dt>3) <b>SVt_RV</b>
+	<dt>4) <b>SVt_PV</b>
+	<dt>5) <b>SVt_PVIV</b>
+	<dt>6) <b>SVt_PVNV</b>
+	<dt>7) <b>SVt_PVMG</b>
+	<dt>8) <b>SVt_PVBM</b>
+	<dt>9) <b>SVt_PVLV</b>
+	<dt>10) <b>SVt_PVAV</b>
+	<dt>11) <b>SVt_PVHV</b>
+	<dt>12) <b>SVt_PVCV</b>
+	<dt>13) <b>SVt_PVGV</b>
+	<dt>14) <b>SVt_PVFM</b>
+	<dt>15) <b>SVt_PVIO</b>
+</dl></blockquote>
+
+
 
 <p>In addition to the type names already mentioned, the following
 names are found in the figure: An SvPVIV value can hold a string and
@@ -89,27 +111,7 @@ with arrays or hashes have <i>AV*</i> or <i>HV*</i> respectively in
 their parameter list.
 
 <p>The type field contains a code that represents one of the types
-shown in the type hierarchy figure above.  The symbolic names (and
-sequence) are:
-
-<blockquote><dl>
-	<dt>0) <b>SVt_NULL</b>
-	<dt>1) <b>SVt_IV</b>
-	<dt>2) <b>SVt_NV</b>
-	<dt>3) <b>SVt_RV</b>
-	<dt>4) <b>SVt_PV</b>
-	<dt>5) <b>SVt_PVIV</b>
-	<dt>6) <b>SVt_PVNV</b>
-	<dt>7) <b>SVt_PVMG</b>
-	<dt>8) <b>SVt_PVBM</b>
-	<dt>9) <b>SVt_PVLV</b>
-	<dt>10) <b>SVt_PVAV</b>
-	<dt>11) <b>SVt_PVHV</b>
-	<dt>12) <b>SVt_PVCV</b>
-	<dt>13) <b>SVt_PVGV</b>
-	<dt>14) <b>SVt_PVFM</b>
-	<dt>15) <b>SVt_PVIO</b>
-</dl></blockquote>
+shown in the type hierarchy figure above. 
 
 <p>The SV contains 24 flag bits. The flags bits are used to denote how
 the fields of the type value objects should be interpreted and various
@@ -152,8 +154,9 @@ just to find that the information is not there.
 
   <dt> 5) <b>GMAGICAL</b> (Get Magic)
 
-  <dd> This flag indicate that the object has a magic <i>get</i> method to
-       be invoked. It can only be set for value type SvPVMG or subtypes
+  <dd> This flag indicate that the object has a magic <i>get</i> or
+       <i>len</i> method to  be invoked.
+       It can only be set for value type SvPVMG or subtypes
        of it.  This flag also indicate that the MAGIC pointer is valid.
 
        <p>
@@ -167,7 +170,7 @@ just to find that the information is not there.
   <dt> 7) <b>RMAGICAL</b> (Random Magic)
 
   <dd> This flag indicate that the object has any other magical methods
-       (besides Get/Set magic method) or even methodless magic attacted.
+       (besides get/len/set magic method) or even methodless magic attacted.
        <p>
        Any of GMAGICAL, SMAGICAL and RMAGICAL is called MAGICAL
 
@@ -299,9 +302,9 @@ corresponding flag is called NOK.
 
 As a special hack in order to improve the speed of removing characters
 from the beginning of a string, the OOK flag is used.  When this flag
-is on, then the IVX value is not interpreted as an integer value, but is
-instead used as an offset into the string.  The PVX, CUR, LEN is
-adjusted to point within the allocated string instead.  The
+is on, then the IVX value is not interpreted as an integer value, but
+is instead used as an <i>offset</i> into the string.  The PVX, CUR,
+LEN is adjusted to point within the allocated string instead.  The
 sv_chop()/sv_backoff() routines adjusts the offset.
 
 <p><center><img src="ook.gif"></center>
@@ -311,9 +314,10 @@ sv_chop()/sv_backoff() routines adjusts the offset.
 <p>As a special case we also have <i>SvIV</i> and <i>SvNV</i> types
 that only have room for a single integer or a single double value.
 These are special in that the PVX/CUR/LEN fields are not present even
-if the ANY pointer points to the ghostual incarnation of them.  This
-makes it possible for code to always access the IVX/NVX fields at a
-fixed offset from where SV field ANY points.
+if the ANY pointer acutally points to the ghostual incarnation of
+them.  This arrangement makes it possible for code to always access
+the IVX/NVX fields at a fixed offset from where the SV field ANY
+points.
 
 <p><center><img src="sviv.gif"></center>
 
@@ -331,9 +335,14 @@ above and below).
 
 <p>The <i>SvPVMG</i> is like <i>SvPVNV</i> above, but has two
 additional fields; MAGIC and STASH.  MAGIC is a pointer to additional
-structures that contains callback functions and other data.  STASH is a
-pointer to the HV that represents some namespace.  This field is set
-when the value is blessed into a package (becomes an object).
+structures that contains callback functions and other data.  If the
+MAGIC pointer is non-NULL, then one or more of the MAGICAL flags will
+be set.
+
+
+<p>STASH is a pointer to a HV that represents some namespace/class.
+This field is set when the value is blessed into a package (becomes an
+object).  The OBJECT flag will be set when STASH is.
 
 <p><center><img src="svpvmg.gif"></center>
 
@@ -341,14 +350,13 @@ when the value is blessed into a package (becomes an object).
 
 <h2>AV</h2>
 
-<p>An array is in many ways represented similar to how strings are
-represented.  An AV contains all the fields of SvPVMG and adds the
-following tree fields: ALLOC is a pointer to the allocated array.
-ARYLEN is a pointer to an SV (which is returned when $#array is
-requested). FLAGS contains some extra flag bits that are specific of
-the array subtype.
+<p>An array is in many ways represented similar to strings.  An AV
+contains all the fields of SvPVMG and adds the following tree fields:
+ALLOC is a pointer to the allocated array.  ARYLEN is a pointer to an
+SV (which is returned when <code>$#array</code> is requested). FLAGS
+contains some extra flag bits that are specific of the array subtype.
 
-<p>The first three fields has been renamed even if the serve nearly
+<p>The first three fields of xpvav has been renamed even if the serve nearly
 the same function.  PVX has become ARRAY.  CUR has become FILL and LEN
 has become MAX.  One difference is that the value of FILL/MAX is
 always one less than CUR/LEN would be in the same situation.  The
@@ -360,7 +368,7 @@ IVX/NVX fields are unused.
 subtypes above/below.  Usually ALLOC and ARRAY both points to the
 start of the allocated array.  The use of two pointers is similar to
 the OOK hack described above.  The shift operation can be implemented
-efficiently by just adjusting the ARRAY POINTER (and FILL/MAX).
+efficiently by just adjusting the ARRAY pointer (and FILL/MAX).
 Similar the pop just involves decrementing the FILL count.
 
 <p>The are only 3 array flags used: (I'll try to describe them when I
