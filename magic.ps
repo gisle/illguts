@@ -8,6 +8,7 @@
         x 25 add y 45 sub x 37.5 add y 30 sub rect fill
      grestore
 
+     /Helvtica findfont 10 scalefont setfont
      x 25   add dup y 30 sub M y 45 sub L stroke
      x 37.5 add dup y 30 sub M y 45 sub L stroke
      (private) x 2.5 add y 42 sub 20 mws pop
@@ -33,3 +34,46 @@
    end
 } def
 
+% <x> <y> [() () () (&magic_set) ()] mgvtbl
+
+/mgvtbl {
+   10 dict begin
+     /funcs exch def
+     /y exch def
+     /x exch def
+     /w 18 def
+     /x2 x 5 w mul add def
+     /y2 y 15 sub def
+
+     1 setlinewidth
+     x y x2 y2 rect stroke
+     0.5 setlinewidth
+     x y2 M
+     /Helvetica findfont 5 scalefont setfont
+     [(GET) (SET) (LEN) (CLEAR) (FREE)]  {
+        gsave w 2 div 9 rmoveto cshow grestore
+        gsave w 0 rmoveto 0 15 rlineto stroke grestore
+        w 0 rmoveto
+     } forall
+
+     /y  y2 5 add def
+     /x2 x2 w 2 div sub def
+     /y2 y2 10 sub def
+
+     /Courier findfont 8 scalefont setfont
+     funcs {
+        dup length 0 eq { %ifelse
+           % no func
+           pop
+           newpath x2 y 2 0 360 arc fill
+        } {
+           % func to displa
+           x2 6 sub y2 8 sub M show
+           x2 y x2 y2 ptrn
+           /y2 y2 9 sub def
+        } ifelse
+        /x2 x2 w sub def
+     } forall
+
+   end
+} def
