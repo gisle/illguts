@@ -24,9 +24,11 @@ all: \
    optypes.gif\
    op1.gif    \
    op2.gif    \
+   stack.gif  \
+   scope.gif  \
 
 
-%.eps: %.epsx Makefile epsx2eps sv.ps common.ps mws.ps box.ps str.ps ptr.ps magic.ps arrow.ps chararray.ps gp.ps stash.ps glob.ps op.ps
+%.eps: %.epsx Makefile epsx2eps sv.ps common.ps mws.ps box.ps str.ps ptr.ps magic.ps arrow.ps chararray.ps gp.ps stash.ps glob.ps op.ps dist.ps
 	./epsx2eps $< >$@
 
 %.gif: %.eps
