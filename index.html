@@ -394,12 +394,15 @@ this value type.
 
 <p>A table of 256 elements is appended to the PVX.  This table
 contains the distance from the end of string of the last occurrence of
-each character in the original string.  In addition fbm_compile()
-locates the rarest character in the string (using builtin letter
-frequency tables) and stores this character in the BmRARE field.  The
-BmPREVIOUS field is set to the location of the first occurrence of the
-rare character.  (The purpose of the BmUSEFUL field is not clear to me
-yet.)
+each character in the original string. (In recent Perls, the table is
+not built for string shorter than 3 character.)  In addition
+fbm_compile() locates the rarest character in the string (using
+builtin letter frequency tables) and stores this character in the
+BmRARE field.  The BmPREVIOUS field is set to the location of the
+first occurrence of the rare character. BmUSEFUL is incremented
+(decremented) by the RE engine when this constant substring (does not)
+help in optimizing RE engine access away.  If it goes below 0, then
+the corresponding substring is forgotten+free()ed;
 
 <p><center><img src="svpvbm.gif"></center>
 
