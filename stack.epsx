@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0 EPSF-1.2
-%%BoundingBox: 15 23 305 290
+%%BoundingBox: 15 23 305 330
 %%Creator: Gisle Aas (Copyright 1998)
 
 %require "common.ps"
@@ -19,8 +19,12 @@
 80 102 M (retstack)   rshow  85 105  100 105 ptrn
 80 152 M (markstack)  rshow  85 155  100 155 ptrn
 80 202 M (stack_base) rshow  85 205  100 205 ptrn
+40 287 M (curstack) show %25 230 25 282.5 40 282.5 ptrn
 
-20 220 M (curstack) show 25 230 25 282.5 40 282.5 ptrn
+%85 315 M (argarray) rshow
+/Courier-Bold 10 SF
+85 315 M
+( @_) show
 
 85 142 120 142 120 152 ptrn  % markstack_ptr
 85 132 200 132 200 150 ptrn  % markstack_max
@@ -123,3 +127,26 @@ grestore
      /x x 20 add def
   } for
 end
+
+% draw @_
+0 setgray
+gsave 0.8 setgray 190 260 220 270 rect fill grestore
+170 260 220 270 rect stroke
+170 10 210 { dup 260 M 270 L stroke } for
+
+gsave 0.5 setgray
+  175 265 175 242 ptrn
+  185 265 195 242 ptrn
+grestore
+
+% struct av and struct xpvav
+gsave 105 322 translate 0.5 dup scale
+  % draw the curstack AV structs
+  0 0 sv
+  55 0 9 box
+  /Helvetica 11 SF
+  (ARRAY) 60 -12 30 mws pop
+  (ALLOC) 60 -117 30 mws pop
+  97.5 -112.5 130 -112.5 ptrn
+  97.5 -7.5 120 -7.5 120 -112.5 ptrn
+grestore
