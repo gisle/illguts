@@ -32,14 +32,14 @@ diagram.  The arrows indicate inheritance (IS-A relationships).
 
 <p><center><img src="svtypes.png"></center>
 
-<p>As you can see, Perl uses multiple inheritance with C <i>SvNULL</i> (also named just <i>SV</i>)
-acting as some kind of virtual base class.  All the Perl types are
-identified by small numbers, and the internal Perl code often gets away
-with testing the ISA-relationship between types with the &lt;= operator.
-As you can see from the figure above, this can only work reliably for
-some comparisons.  All Perl data value objects are tagged with their
-type, so you can always ask an object what its type is and act
-according to this information.
+<p>As you can see, Perl uses multiple inheritance with C <i>SvNULL</i>
+(also named just <i>SV</i>) acting as some kind of virtual base class.
+All the Perl types are identified by small numbers, and the internal
+Perl code often gets away with testing the ISA-relationship between
+types with the &lt;= operator.  As you can see from the figure above,
+this can only work reliably for some comparisons.  All Perl data value
+objects are tagged with their type, so you can always ask an object
+what its type is and act according to this information.
 
 <p>The symbolic type names (and associated value) are:
 
