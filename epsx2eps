@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+while (<>) {
+   if (/^%\s*include\s+\"([^\"]+)\"/) {
+       include($1);
+       next;
+   }
+   print;
+}
+
+sub include
+{
+   my $file = shift;
+   print STDERR "INCLUDE $file\n";
+}
