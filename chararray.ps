@@ -1,5 +1,6 @@
 %require "common.ps"
 %require "rect.ps"
+%require "mws.ps"
 
 /chararray {                   % <x> <y> [(f)(o)(o)(\\0)] chararray -
    10 dict begin
@@ -17,13 +18,12 @@
          cw cw w cw sub {
             dup 0 M -10 L S
          } for
-         /Courier 6 SF
-         cw 2 div -7 M
+         /Courier 8 SF
+         cw 2 div -7.5 M
          chars {
-            gsave cshow grestore
+            gsave currentpoint cw 1 sub mwcs grestore
             cw 0 RM
          } forall
-         /Courier 8 SF
          w 2 M (char[]) rshow
       grestore
    end
