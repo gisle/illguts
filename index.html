@@ -798,8 +798,10 @@ twelve additional fields; CvSTASH, START, ROOT, XSUB, GV, FILEGV,
 DEPTH, PADLIST, OUTSIDE, MUTEXP, OWNER, FLAGS.  (The fields MUTEXP and
 OWNER are only present for Perls that support threading).
 
-
 <p><center><img src="cv.gif"></center>
+
+<p><i>I will need to describe PADs and OPs before detailed description
+of CVs makes sense.</i>
 
 <a name="svpmfm"><h2>SvPVFM</h2></a>
 
@@ -812,10 +814,12 @@ OWNER are only present for Perls that support threading).
 
 <a name="pad"><h2>PAD</h2></a>
 
+NOTYET
+
 <a name="op"><h2><a href="op.html">OP</a></h2></a>
 
-I will make a separate document that describes <a
-href="op.html">syntax trees and OP codes</a>.
+<i>I will perhaps make a separate document that describes <a
+href="op.html">syntax trees and OP codes</a>.</i>
 
 <h2>Stacks</h2>
 
@@ -827,37 +831,84 @@ when the scope is left.
 <p>The <code>scopestack</code> pushes the <code>savestack_ix</code>
 when <code>ENTER</code> is executed.  On <code>LEAVE</code> the top
 <code>savestack_ix</code> entry is popped and all things saved on the
-<code>savestack</code> since this is restored.
+<code>savestack</code> since this is restored.  This means that a
+ENTER/LEAVE pairs represents dynamic nestable scopes.
 
-<p>The <code>savestack</code> contains records of things saved
-in order to be restored when the scopes are left.  Each record consist
-of 2-4 ANY elements.  The first one is a type code, which is used to
+<p>The <code>savestack</code> contains records of things saved in
+order to be restored when the scopes are left.  Each record consist of
+2-4 ANY elements.  The first one is a type code, which is used to
 decide how long the record is and how to interpret the other elements.
-(In the figure the type codes are marked pinkish color.)
+(In the figure the type codes are marked pinkish color.)  The
+restoring involves updating memory locations of various types as well
+as more general callbacks (destructors).
 
-<p>The <code>tmps_stack</code> implement mortal SVs.  When
-<code>SAVETMPS</code> is executed, then the old
+<p>The <code>tmps_stack</code> implement mortal SVs.  Each time a new
+mortal is made, then <code>tmps_ix</code> is incremented and the
+corresponding entry in <code>tmps_stack</code> made to point to it.
+When <code>SAVETMPS</code> is executed, then the old
 <code>tmps_floor</code> value is saved on the <code>savestack</i> and
 then <code>tmps_floor</code> is set equal to <code>tmps_ix</code>.
 When <code>FREETMPS</code> is executed, then all SVs pointed to by the
 pointers between <code>tmps_floor</code> and <code>tmps_ix</code> will
-have their REFCNT decremented.  How many this will be will then depend
+have their REFCNT decremented.  How many this will be depend
 on how many scopes has been left.  (Note that the
 <code>tmps_floor</code> and <code>tmps_ix</code> values is the index
-of the last SV* pushed.)
+of the last SV* pushed. They start out as -1 when the stack is empty.)
 
 <p><center><img src="scope.gif"></center>
 
-<p>The four next stacks manage subroutine calls (and evals and loops).
+<p>The next fours stacks manage subroutine calls (and evals and
+loops).
+
+<p>The first one is simply denoted is <em>the stack</em> and is really
+an AV.  The variable <code>curstack</code> points to this AV.  To
+speed up access Perl also maintain direct pointers to the start
+(<code>stack_base</code>) and the end (<code>stack_max</code>) of the
+allocated ARRAY of this AV.  The AV so special that it is marked as
+not REAL and the FILL field is not updated.  Instead we use a
+dedicated pointed called <code>stack_sp</code>, the stack pointer.
+The stack is used to pass arguments to PP operations and subroutines
+and is also the place where the result of these operations as well as
+subroutine return values are placed.
+
+<p>The <code>markstack</code> is used to indicate the extent of the
+stack to be passed as @_ to Perl subroutines.  When a subroutine is to
+be called, then first the start of the arguments are marked by pushing
+the <code>stack_sp</code> offset onto <code>markstack</code>, then the
+arguments themselves are calculated and pushed on the stack.  Then a
+<code>@_</code> array is set up with pointers the SV* on the stack
+between the <code>MARK</code> and <code>stack_sp</code> and the
+subroutine starts running.  For XSUB routines, the creation of
+<code>@_</code> is suppressed, and the routine will use the
+<code>MARK</code> directly to find it's arguments.
+
+
+<p>The <code>retstack</code> contains pointers to the operation to go
+to after subroutines return.  Each time a subroutine is called a new
+OP* is pushed on this stack.  When a subroutine returns, Perl pop the
+top OP* from <code>retstack</code> and continue execution from this
+place.
+
+<p>The <code>cxstack</code> (context stack) contains records that
+describe the current context.  Each time a subroutine, an eval or a
+loop is entered, then a new PERL_CONTEXT record is pushed on the
+<code>cxstack</code>.  When subroutine/eval/loop finished then the
+record top record is poped and the corresponding values restored.  The
+PERL_CONTEXT record is descibed below.
 
 <p><center><img src="stack.gif"></center>
 
+<h3>PERL_CONTEXT</h3>
+
+NOTYET
 
 <h2>REGEXP</h2>
 
+NOTYET
+
 <h2>PerlInterpreter</h2>
 
-<h2> More stuff ..... </h2>
+NOTYET
 
 
 
