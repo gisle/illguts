@@ -1,0 +1,22 @@
+#!/local/perl/bin/perl -w
+
+# $Id$
+#
+# This script turns a *.pds-file into a HTML file that is suitable for
+# printing or viewing as a whole.
+
+$slideno = 0;
+
+while (<>) {
+   s/^=slide\s+(.*)/slide_head($1)/e;
+   s/^=comments?\s*$/<hr>\n/;
+   print;
+}
+
+sub slide_head
+{
+    my $title = shift;
+    $slideno++;
+    "<p><table border=0 width=100%><tr><td width=90%><hr size=8></td><td><small><p align=right>&nbsp;Slide&nbsp;$slideno&nbsp;<\/small></td><td width=10%><hr size=8></td></tr></table>
+<h2>$1<\/h2>";
+}
