@@ -13,6 +13,8 @@ all: \
    av.gif     \
    hv.gif     \
    strtab.gif \
+   cv.gif     \
+   svpvfm.gif \
    io.gif     \
    ook.gif    \
    flags.gif  \
