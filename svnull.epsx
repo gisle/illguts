@@ -2,6 +2,7 @@
 %%BoundingBox: -5 -5 100 70
 
 %include "common.ps"
+%include "mws.ps"
 
 % shadow
 gsave

@@ -2,6 +2,7 @@
 %%BoundingBox: 80 270 520 625
 
 %include "common.ps"
+%include "arrow.ps"
 
 /S {                                   % x y str
   dup stringwidth pop 2 div            % x y str dx
