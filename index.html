@@ -6,7 +6,7 @@ text="#000000" link="#000055" vlink="#550000" alink="#000000"
 topmargin=0>
 
 
-<h1 align=center>PerlGuts Illustrated<br><small>Version 0.05</small></h1>
+<h1 align=center>PerlGuts Illustrated<br><small>Version 0.06</small></h1>
 
 <p>This document is meant to supplement the <i>perlguts(1)</i> manual
 page that comes with Perl.  It includes commented illustrations of all
@@ -65,12 +65,12 @@ according to this information.
 
 
 <p>In addition to the simple type names already mentioned, the
-following names are found in the figure: An <i>SvPVIV</i> value can
+following names are found in the hierarchy figure: An <i>SvPVIV</i> value can
 hold a string and an integer value.  An <i>SvPVNV</i> value can hold a
 string, an integer and a double value.  The <i>SvPVMG</i> is used when
 magic is attached or the value is blessed.  The <i>SvPVBM</i> adds
 information for fast searching (Boyer-Moore) on the string value.  The
-<i>SvPVLV</i> represents a L-value object.
+<i>SvPVLV</i> represents a LValue object.
 <i>CV</i> is a code value, which represents a perl
 function/subroutine/closure or contains a pointer to an XSUB.
 <i>GV</i> is a glob value and <i>IO</i> contains pointers to open
@@ -115,13 +115,13 @@ incremented when a new pointer is made to point to it and decremented
 when the pointer is destroyed or assigned a different value.  When the
 reference count reaches zero the object is freed.
 
-<p>The third field contains some FLAGS and a TYPE sub-field.
+<p>The third word contains a FLAGS field and a TYPE field.
 
-<p>The type field contains a code that represents one of the types
+The TYPE field contains a small number that represents one of the types
 shown in the type hierarchy figure above. 
 
-<p>The SV contains 24 flag bits. The flags bits contain information on how
-the fields of the object should be interpreted, and
+The FLAGS field has room for 24 flag bits, which encode how various
+fields of the object should be interpreted, and
 other state information.  Some flags are just used as optimizations
 in order to avoid having to dereference several levels of pointers
 just to find that the information is not there.
@@ -314,7 +314,7 @@ addition to the <i>SV</i> struct of SvNULL, an <i>xpv</i> struct is
 allocated and it contains 3 fields.  PVX is the pointer to an
 allocated char array.  CUR is an integer giving the current length of
 the string.  LEN is an integer giving the length of the allocated
-string.  The char/byte at (PVX + CUR) should always be '\0' in order
+string.  The byte at (PVX + CUR) should always be '\0' in order
 to make sure that the string is NUL-terminated if passed to C library
 routines.  This requires that LEN is always at least 1 larger than CUR.
 
@@ -323,7 +323,7 @@ routines.  This requires that LEN is always at least 1 larger than CUR.
 <p>The POK flag indicates that the string pointed to by PVX contains
 an valid string value.  If the POK flag is off and the ROK flag is
 turned on, then the PVX field is used as a pointer to an SV (see SvRV
-below) and CUR/LEN is unused.  A SvPV with both POK and ROK flags
+below) and CUR/LEN is unused.  An SvPV with both the POK and ROK flags
 turned off represents <i>undef</i>.  The PVX pointer can also be NULL
 when POK is off and no string storage has been allocated.
 
@@ -345,7 +345,7 @@ corresponding flag is called NOK.
 
 <a name="ook"><h2>SvOOK</h2></a>
 
-As a special hack in order to improve the speed of removing characters
+As a special hack, in order to improve the speed of removing characters
 from the beginning of a string, the OOK flag is used.  When this flag
 is on, then the IVX value is not interpreted as an integer value, but
 is instead used as an <i>offset</i> into the string.  The PVX, CUR,
@@ -378,7 +378,8 @@ value.
 
 <p>Subclasses of SvPV can also be treated as SvRV objects when the ROK
 flag is turned on for them.  The PVX will then be used as the RV field
-of the SvRV.  Of course ROK and POK is mutually exclusive.
+of the SvRV.  Of course ROK and POK is mutually exclusive and the
+CUR/LEN fields have no meaning when ROK is on.
 
 <p><center><img src="svpvrv.gif"></center>
 
@@ -391,8 +392,10 @@ MAGIC pointer is non-NULL, then one or more of the MAGICAL flags will
 be set.
 
 <p>STASH (<b>s</b>ymbol <b>t</b>able h<b>ash</b>) is a pointer to a HV
-that represents some namespace/class, which means that the NAME field
-of the HV must be non-NULL (see description of HV ans stashes below).
+that represents some namespace/class.
+(That the HV represents some namespace means that the NAME field
+of the HV must be non-NULL. See description of HVs and stashes below).
+
 The STASH field is set when the value is blessed into a package
 (becomes an object).  The OBJECT flag will be set when STASH is.
 <small><i>(IMHO, this field should really have been named "CLASS".
@@ -482,12 +485,12 @@ at the end of the string (or before newline at the end of the string).
 
 The <i>SvPVLV</i> is like <i>SvPVMG</i> above, but has four additional
 fields; TARGOFF, TARGLEN, TARG, TYPE.  The typical use is for Perl
-builtins that can be used in the L-value context (substr, vec,...).
+builtins that can be used in the LValue context (substr, vec,...).
 They will return a SvPVLV value, which when assigned to affect the
 <i>target</i> object which we keep a pointer to in the TARG field.
 
-<p>The TYPE is a character variable.  It encodes the kind if L-value
-this is.  Interpretation of the other L-value fields depend on the TYPE.
+<p>The TYPE is a character variable.  It encodes the kind if LValue
+this is.  Interpretation of the other LValue fields depend on the TYPE.
 The SvPVLVs are (almost) always magical.  The magic type will match
 the TYPE field of the SvPVLV.  The types are:
 
