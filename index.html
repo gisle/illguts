@@ -6,7 +6,7 @@ text="#000000" link="#000055" vlink="#550000" alink="#000000"
 topmargin=0>
 
 
-<h1 align=center>PerlGuts Illustrated<br><small>Version 0.04</small></h1>
+<h1 align=center>PerlGuts Illustrated<br><small>Version 0.05</small></h1>
 
 <p>This document is meant to supplement the <i>perlguts(1)</i> manual
 page that comes with Perl.  It includes commented illustrations of all
@@ -35,7 +35,7 @@ diagram.  The arrows indicate inheritance.
 <p>As you can see, Perl uses multiple inheritance with C <i>SvNULL</i> (also named just <i>SV</i>)
 acting as some kind of virtual base class.  All the Perl types are
 identified by small numbers, and the internal Perl code often gets away
-with testing the ISA-relationship between types with the <= operator.
+with testing the ISA-relationship between types with the &lt;= operator.
 As you can see from the figure above, this can only work reliably for
 some comparisons.  All Perl data value objects are tagged with their
 type, so you can always ask an object what its type is and act
@@ -430,7 +430,7 @@ depends on the kind of magic this is.
 
 <li><i>ptr</i> is usually a pointer to some character string.  How it
 is used depends on the kind of magic this is.  If the <i>len</i> field
-is >= 0, then <i>ptr</i> is assumed to point to a malloced buffer and
+is &gt;= 0, then <i>ptr</i> is assumed to point to a malloced buffer and
 will be automatically freed when the magic is.
 
 <li><i>len</i> is usually the length of the character string pointed
@@ -589,7 +589,7 @@ iterator starts out with RITER = -1 and EITER = NULL.
 
 <li>The last two fields are only used when the hash represents a name
 space (<i>stash</i>).  PMROOT points to a node in the Perl syntax
-tree.  It is used to implement the require function.  NAME is a
+tree.  It is used to implement the reset() for REs.  NAME is a
 NUL-terminated string which denotes the name of the name space (or
 <i>package</i>).  This is one of the few places where Perl does not
 allow strings with embedded NULs.
@@ -666,7 +666,7 @@ SvNULL flags:
 but has five additional fields; GP, NAME, NAMELEN, GvSTASH, FLAGS.
 
 <p>The GP is a pointer to structure that holds pointers to data of
-various types.  Perl use a pointer (instead of including the GP fields
+various kinds.  Perl use a pointer (instead of including the GP fields
 in the xpvgv) in order to implement the proper glob aliasing
 behavior (i.e. different GVs can share the same GP).
 
@@ -706,15 +706,18 @@ an GLOB based on the name of another glob.
 
 <p>GPs can be shared between one or more GVs.  The data type fields
 for the GP are: SV, IO, FORM, AV, HV, CV.  These hold a pointer to the
-corresponding data type (The SV must point to some SV with type <=
-SVt_PVLV. The FORM field must point to a SvPVFM if non-NULL.).  The SV
-is always present (but might point to a SvNULL object).
+corresponding data type object. (The SV must point to some simple SvNULL
+subtype (i.e. with type &lt;= SVt_PVLV). The FORM field must point to a
+SvPVFM if non-NULL.  The IO field must point to an IO if non-NULL, the AV
+to an AV, etc.)  The SV is always present (but might point to a
+SvNULL object).  All the others are initially NULL.
 
 <p>The additional administrative fields in the GP are: REFCNT, EGV,
 CVGEN, LASTEXPR, LINE, FILEGV.
 
 <p>REFCNT is a reference counter.  It says how many GVs have a pointer
-to this GP.  When the counter reach 0 the GP is freed.
+to this GP.  It is incremented/decremented as new GVs reference/forget
+this GP.  When the counter reach 0 the GP is freed.
 
 <p>EGV is a pointer to the GV that originally created this GP (used to
 tell the real name of any aliased symbol).  If the original GV is freed,
@@ -734,10 +737,12 @@ is incremented.)
 
 <p>LASTEXPR is an integer I don't understand the meaning of yet.
 
-<p>FILE is a pointer to a GV that contains the name of the file where
-this symbol was first created.
+<p>FILEGV is a pointer to a GV where the SV of the GP is the name of
+the file where this symbol was first created.  The NAME of this GV is
+the filename prefixed with "_&lt;" and GvSTASH is
+<code>defstash</code> (see description of stashes below).
 
-LINE is the corresponding line number in the FILE.
+LINE is the corresponding line number in the file.
 
 <h3>Stashes</h3>
 
@@ -748,12 +753,13 @@ GVs.  The root of the namespace is pointed to by the variable
 
 <p>In the figure below we have simplified the representation of
 stashes to a single box.  The text in the blue field is the NAME of
-the HV.  The hash elements keys are shown as field names and the
-element values are shown as a pointers to globs (GV).  The GVs are also
-simplified to a single box.  The text in the green field in the fully
-qualified name of the GV. Only the GP data fields are shown.
+the HV/stash.  The hash elements keys are shown as field names and the
+element values are shown as a pointers to globs (GV).  The GVs are
+also simplified to a single box.  The text in the green field in the
+fully qualified name of the GV. Only the GP data fields are shown (and
+FORM has been eliminated because it was not 2 letters long :-).
 
-<p>The figure illustrates how the scalar (named) variables <code>$foo</code>
+<p>The figure illustrates how the scalar variables <code>$::foo</code>
 and <code>$foo::bar::baz</code> are represented by Perl.
 
 <p><center><img src="stash.gif"></center>
@@ -777,8 +783,8 @@ is at least 4 levels deep and each glob is 3 levels, giving at least
 
 <p>The <code>defstash</code> stash is also a place where globs
 representing source files are entered.  These entries are prefixed
-with "_<".  The FILE field of the GP points to the same glob as the
-corresponding "_<" entry in <code>defstash</code> does.
+with "_&lt;".  The FILEGV field of the GP points to the same glob as the
+corresponding "_&lt;" entry in <code>defstash</code> does.
 
 
 <a name="cv"><h2>CV</h2></a>
