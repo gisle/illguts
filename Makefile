@@ -30,3 +30,6 @@ all: \
 
 clean:
 	rm -f *.eps *.gif *~
+
+dist: all VERSION
+	./make_dist
