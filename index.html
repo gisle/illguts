@@ -346,7 +346,7 @@ above and below).
 
 <p><center><img src="svrv.gif"></center>
 
-<h2>SvMG</h2>
+<h2>SvPVMG</h2>
 
 <p>The <i>SvPVMG</i> is like <i>SvPVNV</i> above, but has two
 additional fields; MAGIC and STASH.  MAGIC is a pointer to additional
@@ -362,6 +362,15 @@ object).  The OBJECT flag will be set when STASH is.
 <p><center><img src="svpvmg.gif"></center>
 
 <p>The <i>MAGIC</i> structure in detail....
+
+<h2>SvPVBM</h2>
+
+<p><center><img src="svpvbm.gif"></center>
+
+<h2>SvPVLV</h2>
+
+<p><center><img src="svpvlv.gif"></center>
+
 
 <h2>AV</h2>
 
@@ -416,22 +425,35 @@ NULL, RITER is incremented until ARRAY[RITER] is non-NULL.  The
 iterator starts out with RITER = -1 and EITER = NULL.
 
 <li>The last two fields are only used when the hash represents a name
-space.  PMROOT points to a node in the Perl syntax tree.  It is used
-to implement the require function.  NAME is a NUL-terminated string
-which denotes the name of the name space (or <i>package</i>).  This is
-one of the few places where Perl does not allow strings with embedded
+space (<i>stash</i>).  PMROOT points to a node in the Perl syntax
+tree.  It is used to implement the require function.  NAME is a
+NUL-terminated string which denotes the name of the name space (or
+<i>package</i>).  This is one of the few places where Perl does not
+allow strings with embedded NULs.
 </ul>
 
 <p>As for AVs the first few fields of the xpvhv has been renamed in
 the same way.  MAX is the number of elements in ARRAY minus one. (The
-size of the ARRAY is required to be a power of 2, since the code just
-ARRAY[HASH & MAX] to locate the correct HE column for an key).  Also
+size of the ARRAY is required to be a power of 2, since the code that
+deals with hashes just mask of the last few bits of the HASH value to
+locate the correct HE column for an key: ARRAY[HASH & MAX]).  Also
 note that ARRAY can be NULL (but MAX will never be below 7).
 
 
 The FILL is the number of elements in ARRAY which is not NULL.  The
 IVX field has been renamed as KEYS an is the number of hash elements
 in the HASH.  The NVX field is unused.
+
+<p>The HEs are simple structs containing 3 pointers.  A pointer to the
+next HE and a pointer to the key and the value of the given hash
+element.
+
+<p>The HEKs are special variable sized structures that store the hash
+keys.  They contain 3 fields.  The <i>hash</i> value of the string,
+the <i>len</i>gth of the string, and the <i>len</i>+1 bytes for the
+key string itself.  (As a special case, a <i>len</i> value of
+<code>HEf_SVKEY</code> (-2) indicate that a pointer to an SV is stored
+in the HEK instead of a string.  This is used for some magical hashes.)
 
 <p><center><img src="hv.gif"></center>
 
@@ -446,13 +468,32 @@ SvNULL flags:
 
   <dt> 21) <b>SHAREKEYS</b>
 
-  <dd> keys live on shared string table
+  <dd> When this flag is set, then all HEK structures containing the
+       same strings will be shared between hashes.  This should reduce
+       the storage occupied by hash keys.
+       The SHAREKEYS flag is on by default for newly created HVs.
+       <p>
+       <center><img src="strtab.gif"></center>
+
+       <p>
+       The shared HEKs are stored in a special HV called
+       <code>strtab</code>.  What is special here is that the <i>val</i>
+       field of the HE structs is used as a reference counter for the
+       HEK.  The counter is incremented when new hashes link up this HEK
+       and decremented when the key is removed from the hashes.
+       When the reference count reach 0, the HEK (and corresponding HE)
+       is removed from <code>strtab</code> and the storage is freed.
+
        <p>
 
   <dt> 22) <b>LAZYDEL</b>
 
-  <dd>entry in xhv_eiter must be deleted
-       <p>
+  <dd>This flag indicates that the hash element pointed to by EITER is
+      really deleted.  When you delete the current hash element, perl
+      only marks the HV with the LAZYDEL flag, and when the iterator
+      is advanced, then the element is zapped.  This makes it possible
+      to delete elements in a hash while iterating over it.
+      <p>
 
 </dl></blockquote>
 
