@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0 EPSF-1.2
-%%BoundingBox: 80 110 280 310
+%%BoundingBox: 56 74 196 217
 %%Creator: Gisle Aas (Copyright 1998)
 
 %include "common.ps"
@@ -7,6 +7,7 @@
 %include "rect.ps"
 %include "mws.ps"
 %include "ptr.ps"
+%include "sv.ps"
 
 /myhe {
    1 dict begin
@@ -26,6 +27,17 @@
        grestore
        0 -15 rmoveto
      } forall
+     strtab not {
+        -5 13 rmoveto
+        gsave
+        42.5 7.5 rmoveto
+        currentpoint 165 ptr1
+        grestore
+        gsave
+        65 10 rmoveto currentpoint translate 0.5 dup scale
+        0 0 sv
+        grestore
+     } if
    end
 } def
 
@@ -68,6 +80,7 @@
    end
 } def
 
+0.7 dup scale
 
 100 300 false myhe
 100 230 true myhe
@@ -77,7 +90,7 @@
 
 % pointers
 142.5 207.5 180 207.5 ptrn
-142.5 277.5 180 277.5 180 216 ptrn
+142.5 277.5 200 277.5 200 240 180 240 180 216 ptrn
 142.5 137.5 180 137.5 180 202 ptrn
 
 /Helvetica findfont 10 scalefont setfont
@@ -85,10 +98,10 @@
 
 gsave
 1 0 0 setrgbcolor
-/Helvetica findfont 10 scalefont setfont
+/Courier-Bold findfont 10 scalefont setfont
 100 115 translate
 90 rotate
-22.5         4 M (hash2) cshow
-22.5  70 add 4 M (strtab) cshow
-22.5 140 add 4 M (hash1) cshow
+22.5         6 M (%hash2) cshow
+22.5  70 add 6 M (strtab) cshow
+22.5 140 add 6 M (%hash1) cshow
 grestore
