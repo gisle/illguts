@@ -1,4 +1,5 @@
-% show a string at given location, but squeeze it if it's to wide
+% show a string at given location, but squeeze it if it's to wide.
+% note that mws leaves the width on the stack
 
 /mws          % <str> <x> <y> <maxwidth> mws <width>
 {
@@ -26,7 +27,7 @@
 
 % same, but centered around x
 
-/mwcs         % <str> <x> <y> <maxwidth> mwcs
+/mwcs         % <str> <x> <y> <maxwidth> mwcs -
 {
     1 dict begin
     gsave
