@@ -8,7 +8,7 @@ topmargin=0>
 
 <h1 align=center>PerlGuts Illustrated</h1>
 
-This document is meant to supplement the perlguts(1) manual page that
+<p>This document is meant to supplement the perlguts(1) manual page that
 comes with Perl.  It includes commented illustrations of all
 (eventually) major internal Perl data structures.  I'll try to expand
 it as I learn more.
@@ -249,19 +249,13 @@ just to find that the information is not there.
 
   <dt> 21) <b>SHAREKEYS</b>
 
-  <dd> keys live on shared string table
-       <p>
-
   <dt> 22) <b>LAZYDEL</b>
-
-  <dd>entry in xhv_eiter must be deleted
-       <p>
 
   <dt> 22) <b>TAIL</b>
 
   <dt> 23) <b>VALID</b>
 
-  <dt> 24) <b>COMPILED</b>
+  <dt> 23) <b>COMPILED</b>
  
 </dl>
 </blockquote>
@@ -345,23 +339,116 @@ when the value is blessed into a package (becomes an object).
 
 <h2>AV</h2>
 
-<p>An array is represented similar to how strings are represented.  It
-contains all the fields of SvPVMG and adds the following tree fields:
-ALLOC is a pointer to the allocated array.  ARYLEN is a pointer to an
-SV (which I think is returned when $#array is requested). FLAGS
-contains some extra flag bits that are specific of the array subtype.
-The first three fields has been renamed even if the serve nearly the
-same function.  PVX has become ARRAY.  CUR has become FILL and LEN has
-become MAX.  One difference is that FILL/MAX is one less than CUR/LEN
-would be in the same situation.  The IVX/NVX fields are unused.
+<p>An array is in many ways represented similar to how strings are
+represented.  An AV contains all the fields of SvPVMG and adds the
+following tree fields: ALLOC is a pointer to the allocated array.
+ARYLEN is a pointer to an SV (which is returned when $#array is
+requested). FLAGS contains some extra flag bits that are specific of
+the array subtype.
+
+<p>The first three fields has been renamed even if the serve nearly
+the same function.  PVX has become ARRAY.  CUR has become FILL and LEN
+has become MAX.  One difference is that the value of FILL/MAX is
+always one less than CUR/LEN would be in the same situation.  The
+IVX/NVX fields are unused.
 
 <p><center><img src="av.gif"></center>
 
-The array contains pointers to any of the subtypes above/below.
+<p>The array pointed to by ARRAY contains pointers to any of the
+subtypes above/below.  Usually ALLOC and ARRAY both points to the
+start of the allocated array.  The use of two pointers is similar to
+the OOK hack described above.  The shift operation can be implemented
+efficiently by just adjusting the ARRAY POINTER (and FILL/MAX).
+Similar the pop just involves decrementing the FILL count.
+
+<p>The are only 3 array flags used: (I'll try to describe them when I
+understand the issue)
+
+<blockquote><dl>
+
+  <dt> 0) <b>REAL</b>
+  <dt> 1) <b>REIFY</b>
+  <dt> 2) <b>REUSED</b>
+
+</dl></blockquote>
 
 <h2>HV</h2>
 
-<p>Perl hashes are represented like this.
+<p>Hashes is the most complex of the Perl data types.  In addition to
+what we have seen above HVs use <i>HE</i> structs to represent a
+key/value pairs and <i>HEK</i> struct to represents keys.
+
+<p>The HV type itself contains all the fields of SvPVMG and then adds
+four new fields:
+
+<ul>
+<li>The first two fields are used to implement a single iterator over the
+elements in the hash.
+RITER which is an integer index into the array referenced by ARRAY and
+EITER which is a pointer to an HE.  In order find the next hash
+element one would first look at EITER->next and if it turns out to be
+NULL, RITER is incremented until ARRAY[RITER] is non-NULL.  The
+iterator starts out with RITER = -1 and EITER = NULL.
+
+<li>The last two fields are only used when the hash represents a name
+space.  PMROOT points to a node in the Perl syntax tree.  It is used
+to implement the require function.  NAME is a NUL-terminated string
+which denotes the name of the name space (or <i>package</i>).  This is
+one of the few places where Perl does not allow strings with embedded
+</ul>
+
+<p>As for AVs the first few fields of the SvPVMG has been renamed in
+the same way.  MAX is the number of elements in ARRAY minus one, and
+the size of the ARRAY is required to be a power of 2 (since the code
+just ARRAY[HASH & MAX] to locate the correct HE column for an key).
+Also note that ARRAY can be NULL (but MAX will never be below 7).
+
+
+The FILL is the number of elements in ARRAY which is not NULL.  The
+IVX field has been renamed as KEYS an is the number of hash elements
+in the HASH.  The NVX field is unused.
 
 <p><center><img src="hv.gif"></center>
+
+<p>In an ideal hash both KEYS and FILL are the same value.  This means
+than all HEs can be located directly in the ARRAY.
+
+<p>The following two hash specific flags are found among the common
+SvNULL flags:
+
+<blockquote><dl>
+
+  <dt> 21) <b>SHAREKEYS</b>
+
+  <dd> keys live on shared string table
+       <p>
+
+  <dt> 22) <b>LAZYDEL</b>
+
+  <dd>entry in xhv_eiter must be deleted
+       <p>
+
+</dl></blockquote>
+
+
+<h2> More stuff ..... </h2>
+
+
+
+<!-- ############################################################ -->
+
+<pre>
+
+
+</pre>
+
+<hr>
+<div align=right>
+<small>
+
+<i>&copy; 1998 Gisle Aas</i><br>
+<a href="mailto:aas@sn.no">&lt;aas@sn.no&gt;</a>
+
+</small>
+</div>
 
