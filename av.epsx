@@ -33,8 +33,8 @@ grestore
     0 -15 rmoveto
 } forall
 
-97.5 217.5 130 ptr1 % MAGIC
-97.5 202.5 130 ptr1 % STASH
+%97.5 217.5 130 ptr1 % MAGIC
+%97.5 202.5 130 ptr1 % STASH
 
 % ARYLEN
 97.5 172.5 130 ptr1
