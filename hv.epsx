@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0 EPSF-1.2
-%%BoundingBox: -5 100 307 310
+%%BoundingBox: -5 97 307 310
 
 %include "common.ps"
 %include "sv.ps"
@@ -8,6 +8,7 @@
 %include "mws.ps"
 %include "ptr.ps"
 %include "he.ps"
+%include "chararray.ps"
 
 0 300 sv
 
@@ -31,9 +32,18 @@ grestore
     0 -15 rmoveto
 } forall
 
+% Some pointer arrows
 97.5 292.5 130 ptr1 % ARRAY
 %97.5 217.5 130 ptr1 % MAGIC
 %97.5 202.5 130 ptr1 % STASH
+97.5 172.5 115 172.5 115 245 130 245 ptrn % EITER
+97.5 142.5 115 142.5 115 110 ptrn % NAME
+
+% NAME string
+gsave
+   113 110 translate 0.8 dup scale
+   0 0 [(F)(o)(o)(:)(:)(B)(a)(r)(\\0)] chararray
+grestore
 
 % SV* box
 gsave
@@ -72,7 +82,7 @@ stroke
 grestore
 grestore
 
-% Pointer to first HE row
+% Pointer to first HE column
 145 292.5 145 250 ptrn
 
 gsave
@@ -85,7 +95,7 @@ gsave
 grestore
 
 
-% Pointer to second HE row
+% Pointer to second HE column
 225 292.5 255 250 ptrn
 
 gsave
@@ -112,4 +122,5 @@ stroke
 240 262.5 M 236 264 L 236 261 L closepath fill
 %130 262.5 M 134 264 L 134 261 L closepath fill
 grestore
+
 
