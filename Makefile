@@ -1,5 +1,6 @@
 all: \
    svnull.eps \
+   svrv.eps   \
    sviv.eps   \
    svnv.eps   \
    svpv.eps   \
