@@ -9,10 +9,10 @@ topmargin=0>
 <h1 align=center>PerlGuts Illustrated<br><small>Version 0.06</small></h1>
 
 <p>This document is meant to supplement the <i>perlguts(1)</i> manual
-page that comes with Perl.  It includes commented illustrations of all
+page that comes with Perl.  It contains commented illustrations of all
 (eventually?) major internal Perl data structures.  Having this
 document handy hopefully makes reading the Perl source code easier.
-It might also help you interpret the <i>Devel::Peek</i> variable
+It might also help you interpret the <i>Devel::Peek</i>
 dumps.  I'll try to expand it as I learn more.
 
 <p>The first things to look at are the data structures that represent
@@ -28,7 +28,7 @@ further guaranteed to be big enough to hold a <code>void*</code>.
 object oriented.  Perl relies on using C's structural equivalence to
 help emulate something like C++ inheritance of types.  The various
 data types that Perl implement are illustrated in this class hierarchy
-diagram.  The arrows indicate inheritance.
+diagram.  The arrows indicate inheritance (IS-A relationships).
 
 <p><center><img src="svtypes.gif"></center>
 
@@ -74,10 +74,10 @@ information for fast searching (Boyer-Moore) on the string value.  The
 <i>CV</i> is a code value, which represents a perl
 function/subroutine/closure or contains a pointer to an XSUB.
 <i>GV</i> is a glob value and <i>IO</i> contains pointers to open
-files and directories and other state information about files.  The
+files and directories and various state information about these.  The
 <i>SvPVFM</i> is used to hold information on forms.
 
-<p>A Perl data object can change type as the value changes.  The SV is
+<p>A Perl data object can change type as the value is modified.  The SV is
 said to be upgraded in this case.  Type changes only go down the
 hierarchy.  (See the sv_upgrade() function in sv.c.)
 
