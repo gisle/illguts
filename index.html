@@ -96,7 +96,7 @@ names reported by the <i>Devel::Peek</i> module.
 
 </i></small></blockquote>
 
-<h2>SvNULL and struct sv</h2>
+<a name="svnull"><h2>SvNULL and struct sv</h2></a>
 
 <p>The simplest type is SvNULL.  It always represents an
 <i>undefined</i> scalar value.  It consist of the "struct sv" only,
@@ -301,7 +301,7 @@ Routines that can take any type as parameter will have
 hashes have <code>AV*</code> or <code>HV*</code> respectively in their
 parameter list.
 
-<h2>SvPV</h2>
+<a name="svpv"><h2>SvPV</h2></a>
 
 <p>A scalar that can hold a string value is called an <i>SvPV</i>.  In
 addition to the <i>SV</i> struct of SvNULL, an <i>xpv</i> struct is
@@ -321,7 +321,7 @@ below) and CUR/LEN is unused.  A SvPV with both POK and ROK flags
 turned off represents <i>undef</i>.  The PVX pointer can also be NULL
 when POK is off and no string storage has been allocated.
 
-<h2>SvPVIV and SvPVNV</h2>
+<h2><a name="svpviv">SvPVIV</a> and <a name="svpvnv">SvPVNV</a></h2>
 
 <p>The <i>SvPVIV</i> type is like <i>SvPV</i> but has an additional
 field to hold a single integer value called IVX.  The IOK flag
@@ -337,7 +337,7 @@ corresponding flag is called NOK.
 
 <p><center><img src="svpvnv.gif"></center>
 
-<h2>SvOOK</h2>
+<a name="ook"><h2>SvOOK</h2></a>
 
 As a special hack in order to improve the speed of removing characters
 from the beginning of a string, the OOK flag is used.  When this flag
@@ -348,7 +348,7 @@ sv_chop()/sv_backoff() routines adjust the offset.
 
 <p><center><img src="ook.gif"></center>
 
-<h2>SvIV and SvNV</h2>
+<h2><a name="sviv">SvIV</a> and <a name="svnv">SvNV</a></h2>
 
 <p>As a special case we also have <i>SvIV</i> and <i>SvNV</i> types
 that only have room for a single integer or a single double value.
@@ -362,7 +362,7 @@ points.
 
 <p><center><img src="svnv.gif"></center>
 
-<h2>SvRV</h2>
+<a name="svrv"><h2>SvRV</h2></a>
 
 <p>The <i>SvRV</i> subtype just lets the SV field ANY point to a
 pointer which points to an SV (which can be any of the SvNULL
@@ -377,7 +377,7 @@ of the SvRV.
 
 <p><center><img src="svpvrv.gif"></center>
 
-<h2>SvPVMG</h2>
+<a name="svpvmg"><h2>SvPVMG</h2></a>
 
 <p>The <i>SvPVMG</i> is like <i>SvPVNV</i> above, but has two
 additional fields; MAGIC and STASH.  MAGIC is a pointer to additional
@@ -436,7 +436,7 @@ is.
 </ol>
 
 
-<h2>SvPVBM</h2>
+<a name="svpvbm"><h2>SvPVBM</h2></a>
 
 <p>The <i>SvPVMG</i> is like <i>SvPVMG</i> above, but has three
 additional fields; BmUSEFUL, BmPREVIOUS, BmRARE.  The SvPVBM value
@@ -470,7 +470,7 @@ should be <i>tail anchored</i>, i.e. a match should only be considered
 at the end of the string (or before newline at the end of the string).
 
 
-<h2>SvPVLV</h2>
+<a href="svpvlv"><h2>SvPVLV</h2></a>
 
 The <i>SvPVLV</i> is like <i>SvPVMG</i> above, but has four additional
 fields; TARGOFF, TARGLEN, TARG, TYPE.  The typical use is for Perl
@@ -530,7 +530,7 @@ IVX or NVX). After this the magic SET method is invoked, which will
 update the TARG accordingly.
 
 
-<h2>AV</h2>
+<a name="av"><h2>AV</h2></a>
 
 <p>An array is in many ways represented similar to strings.  An AV
 contains all the fields of SvPVMG and adds the following tree fields:
@@ -564,7 +564,7 @@ understand the issue)
 
 </dl></blockquote>
 
-<h2>HV</h2>
+<a name="hv"><h2>HV</h2></a>
 
 <p>Hashes are the most complex of the Perl data types.  In addition to
 what we have seen above, HVs use <i>HE</i> structs to represent a
@@ -655,21 +655,22 @@ SvNULL flags:
 
 </dl></blockquote>
 
-<h2>GV</h2>
+<a name="gv"><h2>GV</h2></a>
 
 <The <i>GV</i> ("glob value" aka "symbol") is like <i>SvPVMG</i> above,
 but has five additional fields; GP, NAME, NAMELEN, GvSTASH, FLAGS.
 
 <p>The GP is a pointer to structure that holds pointers to data of
 various types.  Perl use a pointer (instead of including the GP fields
-in the xpvgv) in order to implement glob aliasing.
+in the xpvgv) in order to implement the proper glob aliasing
+behaviour (i.e. different GVs can share the same GP).
 
 <p>The NAME/NAMELEN denotes the unqualified name of this symbol and
-GvSTASH points to the symbol table where this symbol lives.  The fully
-qualified symbol name is obtained by taking the NAME of the GvSTASH
-(see HV above) and appending "::" and NAME to it.  The hash pointed to
-by GvSTASH will also contain an element with NAME as key and this
-symbol as value.
+GvSTASH points to the symbol table where this symbol belongs.  The
+fully qualified symbol name is obtained by taking the NAME of the
+GvSTASH (see HV above) and appending "::" and NAME to it.  The hash
+pointed to by GvSTASH will usually contain an element with NAME as key
+and a pointer to this GV as value.  See description of stashes below.
 
 <p><center><img src="gv.gif"></center>
 
@@ -691,28 +692,48 @@ symbol as value.
  <dt>7) <b>IMPORTED_CV</b>
 </dl></blockquote>
 
-<p>The data type fields for the GP are: SV, IO, FORM, AV, HV, CV.
-These are also acessible from Perl.
+<p>A magic of type '*' is always attacted to the GV.  The GET method
+is used to stringify the globs (fully qualified name prefixed with
+'*').  The SET method is used to alias GLOBS using another globs name.
 
-The
-additional fields are: REFCNT, EGV, CVGEN, LASTEXPR, LINE, FILEGV.
+<h3>GP</h3>
+
+<p>The data type fields for the GP are: SV, IO, FORM, AV, HV, CV.
+These hold a pointer to the corresponding data type.  The SV is always
+present (but might point to a SvNULL object).
+
+<p>The additional administrative fields are: REFCNT, EGV, CVGEN,
+LASTEXPR, LINE, FILEGV.
+
+<h3>Stashes</h3>
+
+GVs and stashes work together to implement the name spaces of Perl.
+Stashes are named HVs with all the element values being pointers to
+GVs.  Nested name spaces are implemented by using special names ending
+in "::" as keys in the parent stash.
+
+In the following figure shows how the scalar variables $foo and
+$foo::bar::baz are represented.
 
 <p><center><img src="stash.gif"></center>
 
-<h2>CV</h2>
+
+
+
+<a name="cv"><h2>CV</h2></a>
 
 <p><center><img src="cv.gif"></center>
 
-<h2>SvPVFM</h2>
+<a name="svpmfm"><h2>SvPVFM</h2></a>
 
 <p><center><img src="svpvfm.gif"></center>
 
 
-<h2>IO</h2>
+<a name="io"><h2>IO</h2></a>
 
 <p><center><img src="io.gif"></center>
 
-<h2>OP</h2>
+<a name="op"><h2>OP</h2></a>
 
 COP/UNOP/BINOP/LISTOP/LOGOP/CONDOP/PMOP/SVOP/GVOP/PVOP/LOOP
 
